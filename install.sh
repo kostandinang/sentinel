@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Installation script for Sentinel
+# This script copies the built binary to Applications and sets up the app bundle
+
+set -e
+
+echo "🛡️  Installing Sentinel..."
+echo ""
+
+# Change to the script directory
+cd "$(dirname "$0")"
+
+# Check if the binary exists
+if [ ! -f ".build/release/Sentinel" ]; then
+    echo "❌ Error: Sentinel binary not found. Please run ./build.sh first"
+    exit 1
+fi
+
+# Create app bundle structure
+APP_DIR="/Applications/Sentinel.app"
+CONTENTS_DIR="$APP_DIR/Contents"
+MACOS_DIR="$CONTENTS_DIR/MacOS"
+RESOURCES_DIR="$CONTENTS_DIR/Resources"
+
+echo "📦 Creating app bundle..."
+sudo mkdir -p "$MACOS_DIR"
+sudo mkdir -p "$RESOURCES_DIR"
+
+# Copy binary
+echo "📋 Copying binary..."
+sudo cp .build/release/Sentinel "$MACOS_DIR/"
+sudo chmod +x "$MACOS_DIR/Sentinel"
+
+# Copy Info.plist
+echo "📋 Copying Info.plist..."
+sudo cp Sentinel/Info.plist "$CONTENTS_DIR/"
+
+# Copy resources
+echo "📋 Copying resources..."
+sudo cp Sentinel/Resources/example-hooks.json "$RESOURCES_DIR/"
+
+# Create a simple icon (optional - can be improved)
+echo "🎨 Setting up icon..."
+# Using system shield icon as placeholder
+# In production, you'd create a proper .icns file
+
+echo ""
+echo "✅ Installation complete!"
+echo ""
+echo "Sentinel has been installed to: $APP_DIR"
+echo ""
+echo "To launch Sentinel:"
+echo "  open /Applications/Sentinel.app"
+echo ""
+echo "Next steps:"
+echo "  1. Launch Sentinel from Applications"
+echo "  2. Configure Claude Code hooks by manually editing ~/.claude/settings.json"
+echo "     Add the hooks configuration from Sentinel/Resources/example-hooks.json"
+echo "     to the 'hooks' property in your settings file."
+echo "  3. Start using Claude Code and watch Sentinel monitor your sessions!"
