@@ -1,0 +1,242 @@
+{
+  "category": "Advanced Monitoring",
+  "priority": "HIGH",
+  "total_estimate_hours": 22,
+  "description": "Add advanced monitoring capabilities including resource usage tracking, performance metrics, detailed diagnostics, and predictive insights",
+  "tasks": [
+    {
+      "id": "implement-resource-tracking",
+      "description": "Track CPU, memory, and disk usage per session",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "CPU usage tracked for each session's PID",
+        "Memory usage monitored in real-time",
+        "Disk I/O tracked for agent processes",
+        "Resource metrics stored with session data",
+        "Historical resource graphs available"
+      ],
+      "technical_notes": [
+        "Use task_info() syscall for per-process metrics",
+        "Sample every 5 seconds while session active",
+        "Metrics: CPU % (user + system), Memory (resident, virtual), Disk bytes read/written",
+        "Store as timeseries: [{timestamp, cpu, memory, disk}]",
+        "Aggregate: peak CPU, avg CPU, peak memory, total I/O",
+        "Use DispatchSource for efficient sampling"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ResourceMonitor.swift (NEW)",
+        "sentinel/Models/ResourceMetrics.swift (NEW)",
+        "sentinel/Models/AgentSession.swift"
+      ]
+    },
+    {
+      "id": "add-network-monitoring",
+      "description": "Monitor network activity for agent sessions",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Track network bytes sent/received per session",
+        "Detect API calls and endpoints",
+        "Monitor network latency",
+        "Display network timeline in session details",
+        "Alert on excessive network usage"
+      ],
+      "technical_notes": [
+        "Use nettop/netstat via process_info or Network framework",
+        "Track: bytes sent, bytes received, active connections",
+        "Detect API domains: api.anthropic.com, openai.com, etc.",
+        "Latency: measure time between request events (if available from hooks)",
+        "Alert: >100MB in single session (configurable threshold)",
+        "Privacy: don't capture actual data, only metadata"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/NetworkMonitor.swift (NEW)",
+        "sentinel/Models/NetworkMetrics.swift (NEW)",
+        "sentinel/Views/SessionDetailView.swift"
+      ]
+    },
+    {
+      "id": "create-performance-profiler",
+      "description": "Profile agent performance and identify bottlenecks",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Identify slow tools and operations",
+        "Track tool execution duration distribution",
+        "Detect performance regressions over time",
+        "Visualize performance trends",
+        "Export performance reports"
+      ],
+      "technical_notes": [
+        "Calculate: tool durations, prompt-to-response latency, session duration",
+        "Distribution: min, max, mean, median, p95, p99 for each tool",
+        "Regression detection: compare recent sessions to baseline (7-day avg)",
+        "Visualize: histogram of tool durations, timeline chart",
+        "Report: Markdown summary with slowest tools, recommendations",
+        "Store aggregates in SQLite for fast queries"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/PerformanceProfiler.swift (NEW)",
+        "sentinel/Views/PerformanceView.swift (NEW)",
+        "sentinel/Models/PerformanceMetrics.swift (NEW)"
+      ]
+    },
+    {
+      "id": "add-error-tracking",
+      "description": "Advanced error tracking and categorization",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Capture and categorize all errors from sessions",
+        "Track error frequency and patterns",
+        "Group similar errors together",
+        "Error timeline and trends",
+        "Error notification with actionable insights"
+      ],
+      "technical_notes": [
+        "Error sources: hook failures, tool errors, session crashes",
+        "Categories: network, timeout, permission, parsing, unknown",
+        "Grouping: by error message pattern (fuzzy match)",
+        "Metrics: error count, error rate (errors/session), top errors",
+        "Timeline: errors per day chart",
+        "Notifications: new error type, error spike (>10% increase)",
+        "Store in separate errors.json for performance"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ErrorTracker.swift (NEW)",
+        "sentinel/Models/ErrorReport.swift (NEW)",
+        "sentinel/Views/ErrorDashboard.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-alerting-system",
+      "description": "Configurable alerting for monitoring events",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Define alert rules (thresholds, patterns)",
+        "Multiple alert channels (notification, email, webhook)",
+        "Alert history and acknowledgment",
+        "Configurable alert severity",
+        "Alert muting and snoozing"
+      ],
+      "technical_notes": [
+        "Alert types: resource threshold (CPU >80%), duration (session >4h), error spike",
+        "Rules: condition (e.g., cpu > 80 for 5 minutes), action (notify, webhook)",
+        "Channels: macOS notification, email (SMTP), webhook POST",
+        "Severity: info, warning, critical (affects notification style)",
+        "Muting: disable alert for 1h, 1d, forever",
+        "History: last 100 alerts, searchable",
+        "Settings UI: manage alert rules"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/AlertingService.swift (NEW)",
+        "sentinel/Models/AlertRule.swift (NEW)",
+        "sentinel/Models/Alert.swift (NEW)",
+        "sentinel/Views/AlertSettingsView.swift (NEW)"
+      ]
+    },
+    {
+      "id": "add-session-comparison",
+      "description": "Compare sessions to identify patterns and anomalies",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Select 2+ sessions to compare",
+        "Side-by-side timeline comparison",
+        "Diff view showing differences",
+        "Highlight anomalies and outliers",
+        "Export comparison report"
+      ],
+      "technical_notes": [
+        "UI: checkbox select mode in session list, Compare button",
+        "Timeline: aligned timelines with event markers",
+        "Diff: different tools used, duration variance, resource usage delta",
+        "Anomaly detection: statistical outliers (>2σ from mean)",
+        "Report: Markdown with comparison table, charts",
+        "Support 2-10 sessions in single comparison"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SessionComparisonView.swift (NEW)",
+        "sentinel/Services/SessionComparator.swift (NEW)",
+        "sentinel/Views/SessionListView.swift"
+      ]
+    },
+    {
+      "id": "create-insights-engine",
+      "description": "AI-powered insights and recommendations",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Analyze patterns across sessions",
+        "Generate actionable insights",
+        "Suggest optimizations",
+        "Predict potential issues",
+        "Display insights in dashboard"
+      ],
+      "technical_notes": [
+        "Insights: 'Most used tool', 'Peak usage time', 'Longest sessions', 'Error-prone tools'",
+        "Recommendations: 'Consider reducing tool X usage', 'Optimize at peak times'",
+        "Pattern detection: recurring errors, usage spikes, tool sequences",
+        "Prediction: 'High memory usage likely in next session based on pattern'",
+        "Dashboard card: 'Insights' with bullet list",
+        "Simple heuristics initially, ML-based later (optional)"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/InsightsEngine.swift (NEW)",
+        "sentinel/Models/Insight.swift (NEW)",
+        "sentinel/Views/AnalyticsView.swift"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "implement-resource-tracking",
+      "to": "create-performance-profiler",
+      "type": "blocks"
+    },
+    {
+      "from": "add-error-tracking",
+      "to": "implement-alerting-system",
+      "type": "blocks"
+    },
+    {
+      "from": "create-performance-profiler",
+      "to": "add-session-comparison",
+      "type": "relates_to"
+    },
+    {
+      "from": "implement-resource-tracking",
+      "to": "create-insights-engine",
+      "type": "blocks"
+    },
+    {
+      "from": "add-error-tracking",
+      "to": "create-insights-engine",
+      "type": "blocks"
+    },
+    {
+      "from": "create-performance-profiler",
+      "to": "create-insights-engine",
+      "type": "blocks"
+    }
+  ],
+  "parallel_opportunities": [
+    "implement-resource-tracking and add-network-monitoring can run in parallel",
+    "add-error-tracking can run in parallel with resource monitoring",
+    "implement-alerting-system and add-session-comparison can run in parallel"
+  ],
+  "risks": [
+    "Resource monitoring may impact system performance",
+    "Network monitoring may raise privacy concerns",
+    "Alert fatigue if thresholds not tuned properly"
+  ],
+  "dependencies": {
+    "external": [
+      "macOS process APIs (task_info)",
+      "Network framework",
+      "Statistics libraries (optional)"
+    ]
+  }
+}

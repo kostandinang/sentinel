@@ -1,0 +1,270 @@
+{
+  "category": "Advanced UI/UX Features",
+  "priority": "HIGH",
+  "total_estimate_hours": 22,
+  "description": "Enhance user experience with mini mode, keyboard shortcuts, improved navigation, and polish for a professional feel",
+  "tasks": [
+    {
+      "id": "design-minimode-layout",
+      "description": "Design compact mini mode UI for menu bar dropdown",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Wireframes for mini mode interface created",
+        "Component hierarchy defined",
+        "Interaction patterns documented",
+        "Space-efficient layout (max 400x600pt)",
+        "Design approved and documented"
+      ],
+      "technical_notes": [
+        "Show 3-5 most recent/active sessions in compact form",
+        "Quick actions: Start/Stop monitoring, Open full window",
+        "Session summary: agent icon, status, time, directory (truncated)",
+        "Hover for full details tooltip",
+        "Click session to expand inline or open full window"
+      ],
+      "files_to_modify": [
+        "docs/designs/MINIMODE_DESIGN.md (NEW)"
+      ]
+    },
+    {
+      "id": "implement-minimode-view",
+      "description": "Implement mini mode SwiftUI view with compact session list",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "MiniModeView renders in menu bar popover",
+        "Shows up to 5 recent sessions",
+        "Real-time status updates",
+        "Quick action buttons functional",
+        "Smooth expand/collapse animations",
+        "Respects dark mode"
+      ],
+      "technical_notes": [
+        "Use NSPopover for menu bar dropdown (not NSMenu)",
+        "Compact session row: 40pt height, icon + status + time",
+        "Auto-refresh every 2 seconds for active sessions",
+        "Footer: Settings gear, Full Window button",
+        "Keyboard navigation: arrow keys + return to expand"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/MiniModeView.swift (NEW)",
+        "sentinel/Views/Components/CompactSessionRow.swift (NEW)",
+        "sentinel/ViewModels/MenuBarViewModel.swift"
+      ]
+    },
+    {
+      "id": "add-mode-toggle",
+      "description": "Add toggle between mini mode and full window in menu bar",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Settings option to choose default mode (mini vs full)",
+        "Right-click menu bar icon to toggle mode",
+        "Persistent preference across app restarts",
+        "Smooth transition between modes",
+        "Mini mode as default for new users"
+      ],
+      "technical_notes": [
+        "UserDefaults key: displayMode (enum: .mini, .full)",
+        "Menu bar right-click: Open Mini Mode, Open Full Window, Settings, Quit",
+        "Option-click for quick toggle",
+        "Transition: fade out mini popover, fade in full window",
+        "Remember window position when switching back to full mode"
+      ],
+      "files_to_modify": [
+        "sentinel/ViewModels/MenuBarViewModel.swift",
+        "sentinel/Views/MenuBarView.swift",
+        "sentinel/Services/PreferencesService.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-keyboard-shortcuts",
+      "description": "Implement comprehensive keyboard shortcut system",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Global hotkey to show/hide Sentinel (⌃⌥⌘S)",
+        "In-app shortcuts for common actions",
+        "Shortcuts displayed in menus",
+        "Customizable shortcuts in settings",
+        "Shortcuts documented in help"
+      ],
+      "technical_notes": [
+        "Global hotkey using Carbon HotKey API or modern EventTap",
+        "In-app shortcuts: ⌘N (new session view), ⌘E (export), ⌘, (settings)",
+        "Navigation: ⌘1-9 (switch between sessions), ⌘[ / ⌘] (prev/next)",
+        "Search: ⌘F (filter sessions)",
+        "Settings: allow customization with conflict detection",
+        "Use NSEvent.addLocalMonitorForEvents for in-app shortcuts"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/KeyboardShortcutService.swift (NEW)",
+        "sentinel/Views/SettingsView.swift",
+        "sentinel/Models/KeyboardShortcut.swift (NEW)",
+        "sentinel/Views/MainWindow.swift"
+      ]
+    },
+    {
+      "id": "add-search-filtering",
+      "description": "Add search and advanced filtering for session list",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Search bar filters sessions by directory, PID, or content",
+        "Real-time filtering as user types",
+        "Advanced filters: date range, agent type, status, duration",
+        "Filter presets: Today, This Week, Active Only, Errors Only",
+        "Clear filter button",
+        "Search results highlighted"
+      ],
+      "technical_notes": [
+        "Search field in toolbar with SF Symbol magnifyingglass",
+        "Fuzzy matching for directory paths",
+        "Filter predicate: NSPredicate or Swift closures",
+        "Combine publisher for debounced search (300ms delay)",
+        "Advanced filter popover with multiple criteria",
+        "Save custom filter presets to UserDefaults"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SessionListView.swift",
+        "sentinel/Views/Components/SearchBar.swift (NEW)",
+        "sentinel/Views/Components/FilterPopover.swift (NEW)",
+        "sentinel/ViewModels/SessionManager.swift"
+      ]
+    },
+    {
+      "id": "improve-session-details",
+      "description": "Enhance session detail view with more information and actions",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Tabbed interface: Timeline, Details, Statistics, Logs",
+        "Timeline view with visual event graph",
+        "Details view with all session metadata",
+        "Statistics: total events, tool breakdown, duration chart",
+        "Logs view: raw event data for debugging",
+        "Copy buttons for paths, PIDs, and event data"
+      ],
+      "technical_notes": [
+        "Use TabView for organization",
+        "Timeline: vertical timeline with event icons and timestamps",
+        "Details: Grid layout with labels and values",
+        "Statistics: Mini charts using Swift Charts",
+        "Logs: Monospaced text view with JSON syntax highlighting",
+        "Copy buttons use NSPasteboard with feedback (checkmark animation)"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SessionDetailView.swift",
+        "sentinel/Views/Components/SessionTimeline.swift (NEW)",
+        "sentinel/Views/Components/SessionStatistics.swift (NEW)",
+        "sentinel/Views/Components/SessionLogs.swift (NEW)"
+      ]
+    },
+    {
+      "id": "add-notification-center",
+      "description": "Create in-app notification center for all events",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Notification bell icon in toolbar with badge count",
+        "Popover showing recent notifications",
+        "Notification types: session started, session ended, errors, warnings",
+        "Click notification to jump to related session",
+        "Mark as read/unread, clear all",
+        "Notification history (last 100)"
+      ],
+      "technical_notes": [
+        "Badge count for unread notifications",
+        "Popover similar to macOS Notification Center",
+        "Notification model: id, type, timestamp, message, sessionPID, read",
+        "Persist notifications to disk",
+        "Auto-mark as read when session opened",
+        "Notification retention: 7 days or 100 items (whichever comes first)"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/NotificationCenter.swift (NEW)",
+        "sentinel/Views/Components/NotificationRow.swift (NEW)",
+        "sentinel/Models/InAppNotification.swift (NEW)",
+        "sentinel/Services/NotificationManager.swift",
+        "sentinel/Views/MainWindow.swift"
+      ]
+    },
+    {
+      "id": "polish-animations",
+      "description": "Add polish animations and transitions throughout app",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Smooth menu bar icon transitions (status changes)",
+        "Session list insert/remove animations",
+        "View transitions with appropriate easing",
+        "Loading states with activity indicators",
+        "Skeleton loading for async data",
+        "Haptic feedback where appropriate (requires trackpad)"
+      ],
+      "technical_notes": [
+        "Menu bar icon: 0.3s ease-in-out color/shape morph",
+        "List animations: .spring() with bounce",
+        "View transitions: .opacity + .slide combined",
+        "Loading: ProgressView with custom styling",
+        "Skeleton: shimmer effect while loading analytics",
+        "NSHapticFeedbackManager for selection feedback"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/MenuBarView.swift",
+        "sentinel/Views/SessionListView.swift",
+        "sentinel/Views/Components/LoadingView.swift (NEW)",
+        "sentinel/Extensions/View+Animations.swift (NEW)"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "design-minimode-layout",
+      "to": "implement-minimode-view",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-minimode-view",
+      "to": "add-mode-toggle",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-keyboard-shortcuts",
+      "to": "add-mode-toggle",
+      "type": "relates_to"
+    },
+    {
+      "from": "add-search-filtering",
+      "to": "improve-session-details",
+      "type": "relates_to"
+    },
+    {
+      "from": "improve-session-details",
+      "to": "add-notification-center",
+      "type": "relates_to"
+    },
+    {
+      "from": "add-notification-center",
+      "to": "polish-animations",
+      "type": "relates_to"
+    }
+  ],
+  "parallel_opportunities": [
+    "implement-keyboard-shortcuts can run in parallel with minimode work",
+    "add-search-filtering can run in parallel with minimode work",
+    "improve-session-details and add-notification-center can be developed simultaneously"
+  ],
+  "risks": [
+    "Global hotkey may conflict with other apps",
+    "Mini mode popover may have sizing issues on different screen resolutions",
+    "Animations may feel janky on older Macs - need performance testing"
+  ],
+  "dependencies": {
+    "external": [
+      "macOS 13+ for SwiftUI features",
+      "Accessibility API for global hotkeys"
+    ]
+  }
+}

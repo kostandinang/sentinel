@@ -1,0 +1,244 @@
+{
+  "category": "Developer Integrations",
+  "priority": "MEDIUM",
+  "total_estimate_hours": 20,
+  "description": "Integrate Sentinel with popular developer tools, IDEs, and workflows for seamless monitoring",
+  "tasks": [
+    {
+      "id": "design-integration-api",
+      "description": "Design public API for third-party integrations",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "REST-like API specification documented",
+        "Webhook support for session events",
+        "Authentication mechanism designed",
+        "Rate limiting strategy defined",
+        "Example integration code provided"
+      ],
+      "technical_notes": [
+        "Local HTTP server on localhost:5237 (configurable port)",
+        "Endpoints: GET /sessions, GET /sessions/:id, POST /webhook/subscribe",
+        "Webhooks: POST to subscriber URL on events (session.started, session.ended, tool.used)",
+        "Auth: API key in header (X-Sentinel-API-Key)",
+        "Rate limit: 100 requests/minute per client",
+        "OpenAPI/Swagger spec for documentation"
+      ],
+      "files_to_modify": [
+        "docs/API_SPEC.md (NEW)",
+        "docs/INTEGRATION_GUIDE.md (NEW)"
+      ]
+    },
+    {
+      "id": "implement-http-server",
+      "description": "Implement local HTTP API server",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "HTTP server running on configurable port",
+        "All endpoints functional and tested",
+        "CORS support for local web apps",
+        "Request logging and error handling",
+        "Server can be disabled in settings"
+      ],
+      "technical_notes": [
+        "Use NWListener (Network framework) or SwiftNIO for HTTP server",
+        "Default port: 5237, configurable in settings",
+        "CORS: allow localhost origins",
+        "JSON responses with proper content-type headers",
+        "Error responses: standard HTTP codes + JSON error details",
+        "Settings toggle: Enable API Server (off by default)"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/APIServer.swift (NEW)",
+        "sentinel/Services/APIRouter.swift (NEW)",
+        "sentinel/Models/APIRequest.swift (NEW)",
+        "sentinel/Models/APIResponse.swift (NEW)",
+        "sentinel/Views/SettingsView.swift"
+      ]
+    },
+    {
+      "id": "create-vscode-extension",
+      "description": "Create VS Code extension for Sentinel integration",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "VS Code extension connects to Sentinel API",
+        "Status bar item shows current session status",
+        "Session list in sidebar panel",
+        "Quick commands to open Sentinel",
+        "Published to VS Code marketplace"
+      ],
+      "technical_notes": [
+        "Extension ID: sentinel-monitor",
+        "Status bar: icon + text (e.g., '🛡️ Claude Active')",
+        "Sidebar: TreeView with sessions, refresh button",
+        "Commands: sentinel.openApp, sentinel.showSessions, sentinel.clearHistory",
+        "Poll Sentinel API every 5 seconds for updates",
+        "TypeScript + VS Code Extension API"
+      ],
+      "files_to_modify": [
+        "integrations/vscode-extension/package.json (NEW)",
+        "integrations/vscode-extension/src/extension.ts (NEW)",
+        "integrations/vscode-extension/src/sentinelClient.ts (NEW)",
+        "integrations/vscode-extension/README.md (NEW)"
+      ]
+    },
+    {
+      "id": "create-cli-client",
+      "description": "Create command-line client for Sentinel",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "CLI tool queries Sentinel API from terminal",
+        "Commands: list, show, export, stats",
+        "Pretty-printed output with colors",
+        "JSON output mode for scripting",
+        "Installation via Homebrew"
+      ],
+      "technical_notes": [
+        "Tool name: sentinel-cli",
+        "Commands: sentinel list, sentinel show <pid>, sentinel export, sentinel stats",
+        "Use Swift ArgumentParser framework",
+        "Colors: Terminal ANSI codes for status colors",
+        "JSON mode: --json flag outputs raw JSON",
+        "Homebrew formula: sentinel-cli.rb in homebrew-sentinel repo"
+      ],
+      "files_to_modify": [
+        "sentinel-cli/Sources/SentinelCLI/main.swift (NEW)",
+        "sentinel-cli/Package.swift (NEW)",
+        "sentinel-cli/README.md (NEW)",
+        "homebrew/sentinel-cli.rb (NEW)"
+      ]
+    },
+    {
+      "id": "add-github-actions",
+      "description": "Create GitHub Actions workflow for CI monitoring",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "GitHub Action posts build events to Sentinel",
+        "Tracks CI/CD sessions like agent sessions",
+        "Configurable webhook URL",
+        "Example workflow provided",
+        "Published to GitHub Marketplace"
+      ],
+      "technical_notes": [
+        "Action name: sentinel-monitor-action",
+        "Inputs: webhook_url, api_key, session_name",
+        "Events: workflow.started, job.started, job.completed, workflow.completed",
+        "POST events to Sentinel webhook endpoint",
+        "Example: monitor test runs, build times, deployment sessions",
+        "JavaScript action using @actions/core"
+      ],
+      "files_to_modify": [
+        "integrations/github-action/action.yml (NEW)",
+        "integrations/github-action/index.js (NEW)",
+        "integrations/github-action/README.md (NEW)",
+        ".github/workflows/example.yml (NEW)"
+      ]
+    },
+    {
+      "id": "add-raycast-extension",
+      "description": "Create Raycast extension for quick Sentinel access",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Raycast extension shows session list",
+        "Quick actions: open session, export, clear",
+        "Search sessions by directory or PID",
+        "Real-time status updates",
+        "Published to Raycast store"
+      ],
+      "technical_notes": [
+        "Extension name: Sentinel Monitor",
+        "Commands: List Sessions, Search Sessions, Export Data",
+        "Use Raycast API (React-based)",
+        "Poll Sentinel API for updates",
+        "Actions: Open in Sentinel, Copy PID, Export Session",
+        "Icons: match Sentinel's SF Symbols"
+      ],
+      "files_to_modify": [
+        "integrations/raycast-extension/package.json (NEW)",
+        "integrations/raycast-extension/src/list-sessions.tsx (NEW)",
+        "integrations/raycast-extension/src/sentinelApi.ts (NEW)",
+        "integrations/raycast-extension/README.md (NEW)"
+      ]
+    },
+    {
+      "id": "add-alfred-workflow",
+      "description": "Create Alfred workflow for Sentinel",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Alfred workflow with keyword 'sentinel'",
+        "List recent sessions",
+        "Filter and open sessions",
+        "Quick export action",
+        "Shared on Alfred forum"
+      ],
+      "technical_notes": [
+        "Keyword: 'sentinel' or 'snt'",
+        "Script filter: query Sentinel API, return JSON results",
+        "Actions: Open session (open sentinel://session/PID), Export",
+        "Use bash/python for API calls",
+        "Cache results for 5 seconds to reduce API load",
+        "Icons: same as menu bar icons"
+      ],
+      "files_to_modify": [
+        "integrations/alfred-workflow/info.plist (NEW)",
+        "integrations/alfred-workflow/sentinel.py (NEW)",
+        "integrations/alfred-workflow/README.md (NEW)"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "design-integration-api",
+      "to": "implement-http-server",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-http-server",
+      "to": "create-vscode-extension",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-http-server",
+      "to": "create-cli-client",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-http-server",
+      "to": "add-github-actions",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-http-server",
+      "to": "add-raycast-extension",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-http-server",
+      "to": "add-alfred-workflow",
+      "type": "blocks"
+    }
+  ],
+  "parallel_opportunities": [
+    "All integration tasks (vscode, cli, github, raycast, alfred) can run in parallel after HTTP server is done",
+    "Different developers can own each integration"
+  ],
+  "risks": [
+    "HTTP server may have security vulnerabilities if not properly secured",
+    "API breaking changes would affect all integrations",
+    "Marketplace approval process (VS Code, Raycast) may take time"
+  ],
+  "dependencies": {
+    "external": [
+      "VS Code Extension API",
+      "Raycast API",
+      "GitHub Actions SDK",
+      "Alfred workflow format"
+    ]
+  }
+}

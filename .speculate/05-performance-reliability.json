@@ -1,0 +1,294 @@
+{
+  "category": "Performance & Reliability",
+  "priority": "CRITICAL",
+  "total_estimate_hours": 26,
+  "description": "Production-harden Sentinel with comprehensive error handling, performance optimization, crash prevention, and recovery mechanisms",
+  "tasks": [
+    {
+      "id": "implement-error-recovery",
+      "description": "Implement comprehensive error recovery and resilience",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "All file I/O operations have retry logic",
+        "Graceful degradation when URL schemes fail",
+        "Session recovery from corrupted state",
+        "Automatic reconnection to dead PIDs",
+        "Error logging with context for debugging"
+      ],
+      "technical_notes": [
+        "Retry logic: exponential backoff (1s, 2s, 4s) for file operations",
+        "URL scheme errors: log and continue, don't crash app",
+        "Corrupted sessions: isolate and quarantine, load remaining sessions",
+        "PID monitoring: detect zombies, gracefully cleanup",
+        "Use OSLog for structured logging with subsystems",
+        "Create error boundary pattern for view rendering"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ErrorRecoveryService.swift (NEW)",
+        "sentinel/Extensions/Result+Retry.swift (NEW)",
+        "sentinel/Services/LoggingService.swift (NEW)",
+        "sentinel/ViewModels/SessionManager.swift"
+      ]
+    },
+    {
+      "id": "optimize-persistence",
+      "description": "Optimize session persistence for large datasets",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Incremental saves instead of full state dumps",
+        "Background thread for all persistence operations",
+        "Compression for archived sessions",
+        "Indexed JSON for fast lookups",
+        "Persistence operations <100ms for 1000 sessions"
+      ],
+      "technical_notes": [
+        "Incremental: save only changed sessions, track dirty flag",
+        "Use DispatchQueue.global(qos: .utility) for I/O",
+        "Compress old sessions (>7 days) with zlib",
+        "Split storage: active.json (recent), archive.json.gz (old)",
+        "Index file: session_id → file offset for O(1) lookups",
+        "Benchmark with 10k sessions: load time, save time, memory usage"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/PersistenceService.swift",
+        "sentinel/Services/CompressionService.swift (NEW)",
+        "sentinel/Models/SessionIndex.swift (NEW)"
+      ]
+    },
+    {
+      "id": "add-memory-management",
+      "description": "Implement memory management for long-running sessions",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Auto-archive old sessions to disk",
+        "Lazy loading of session details",
+        "Memory warning handling",
+        "Configurable retention policy",
+        "Memory footprint <100MB with 1000 sessions"
+      ],
+      "technical_notes": [
+        "Archive sessions older than 30 days (configurable)",
+        "Load session details on-demand when viewed",
+        "Listen to NSNotification.Name.NSApplicationMemoryWarning",
+        "On memory warning: flush caches, archive old sessions",
+        "Retention policy: keep last N sessions, archive by age or size",
+        "Use weak references for cached session details"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/MemoryManager.swift (NEW)",
+        "sentinel/ViewModels/SessionManager.swift",
+        "sentinel/Models/AgentSession.swift"
+      ]
+    },
+    {
+      "id": "implement-crash-reporting",
+      "description": "Add crash reporting and diagnostics system",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Automatic crash log generation",
+        "Diagnostic info collection on crash",
+        "User-facing crash recovery dialog",
+        "Safe mode option to disable features",
+        "Crash reports saved locally for debugging"
+      ],
+      "technical_notes": [
+        "Use NSSetUncaughtExceptionHandler for exceptions",
+        "Signal handlers for SIGSEGV, SIGABRT, etc.",
+        "Diagnostic info: macOS version, Sentinel version, active sessions, memory usage",
+        "Crash dialog: 'Sentinel quit unexpectedly. Send report? [Send] [Don't Send]'",
+        "Safe mode: launch with default settings, disable plugins",
+        "Crash logs: ~/Library/Logs/Sentinel/crashes/"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/CrashReporter.swift (NEW)",
+        "sentinel/Views/CrashRecoveryDialog.swift (NEW)",
+        "sentinel/sentinelApp.swift"
+      ]
+    },
+    {
+      "id": "optimize-ui-rendering",
+      "description": "Optimize UI rendering for smooth performance",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Virtualized list rendering for 1000+ sessions",
+        "60fps scrolling with 100 sessions visible",
+        "Debounced search and filtering",
+        "Efficient view updates (minimize re-renders)",
+        "Smooth animations without janking"
+      ],
+      "technical_notes": [
+        "Use LazyVStack for session list (renders visible rows only)",
+        "Implement shouldComponentUpdate equivalent with Equatable",
+        "Debounce search with 300ms delay using Combine",
+        "Optimize SessionRowView: avoid nested state, cache computed values",
+        "Profile with Instruments: Time Profiler, SwiftUI performance",
+        "Target: <16ms per frame (60fps)"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SessionListView.swift",
+        "sentinel/Views/SessionRowView.swift (NEW)",
+        "sentinel/Extensions/View+Performance.swift (NEW)"
+      ]
+    },
+    {
+      "id": "add-health-monitoring",
+      "description": "Add internal health monitoring and self-diagnostics",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Health check system for critical components",
+        "Performance metrics collection (memory, CPU, latency)",
+        "Self-healing for common issues",
+        "Health status visible in About panel",
+        "Diagnostic export for support"
+      ],
+      "technical_notes": [
+        "Health checks: URL scheme handler, persistence, PID monitor, notification manager",
+        "Metrics: app memory, CPU %, event processing latency, session count",
+        "Self-healing: restart crashed services, rebuild corrupted indexes",
+        "Health status: green (ok), yellow (degraded), red (critical)",
+        "Diagnostic export: JSON with all metrics + logs + config",
+        "Run health checks every 60 seconds"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/HealthMonitor.swift (NEW)",
+        "sentinel/Models/HealthStatus.swift (NEW)",
+        "sentinel/Views/AboutView.swift",
+        "sentinel/Views/DiagnosticsView.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-data-validation",
+      "description": "Add comprehensive data validation throughout app",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "URL scheme parameter validation",
+        "Session data validation on load",
+        "Configuration validation",
+        "Input sanitization for user data",
+        "Schema version compatibility checks"
+      ],
+      "technical_notes": [
+        "URL validation: check scheme, required params, type safety",
+        "Session validation: required fields, timestamp sanity, PID range",
+        "Config validation: bounds checking, enum values, file paths",
+        "Sanitize: paths (no injection), PIDs (positive integers), timestamps (reasonable range)",
+        "Schema versioning: check version field, migrate if needed",
+        "Use Result<T, ValidationError> for validation results"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ValidationService.swift (NEW)",
+        "sentinel/Models/ValidationError.swift (NEW)",
+        "sentinel/Services/URLSchemeHandler.swift",
+        "sentinel/Services/PersistenceService.swift"
+      ]
+    },
+    {
+      "id": "add-background-tasks",
+      "description": "Implement efficient background task management",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Background PID monitoring with minimal CPU usage",
+        "Scheduled cleanup tasks (archive old sessions)",
+        "Background export queue",
+        "Task prioritization and rate limiting",
+        "CPU usage <2% when idle"
+      ],
+      "technical_notes": [
+        "PID monitoring: use NSTimer with 5s interval (not polling)",
+        "Cleanup task: run daily at midnight, archive sessions >30 days",
+        "Export queue: serial queue with QoS .utility",
+        "Rate limiting: max 10 background tasks concurrently",
+        "Idle state: no active sessions = suspend monitoring",
+        "Use OperationQueue for task management"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/BackgroundTaskManager.swift (NEW)",
+        "sentinel/Services/ProcessMonitor.swift",
+        "sentinel/Services/CleanupService.swift (NEW)"
+      ]
+    },
+    {
+      "id": "security-hardening",
+      "description": "Security hardening and sandboxing improvements",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "App Sandbox enabled with minimal entitlements",
+        "Secure storage for sensitive preferences",
+        "Input validation to prevent injection attacks",
+        "Code signing with hardened runtime",
+        "Security audit checklist completed"
+      ],
+      "technical_notes": [
+        "Enable App Sandbox: com.apple.security.app-sandbox = YES",
+        "Required entitlements: incoming-connections (URL scheme), user-selected files",
+        "Use Keychain for sensitive data (API keys, tokens - future)",
+        "Validate all external input (URL params, file paths, PIDs)",
+        "Sign with Developer ID and hardened runtime",
+        "Audit: OWASP Top 10, input validation, XSS prevention",
+        "Run with hardened runtime flags"
+      ],
+      "files_to_modify": [
+        "sentinel/sentinel.entitlements",
+        "sentinel/Info.plist",
+        "docs/SECURITY_AUDIT.md (NEW)"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "implement-error-recovery",
+      "to": "add-health-monitoring",
+      "type": "relates_to"
+    },
+    {
+      "from": "optimize-persistence",
+      "to": "add-memory-management",
+      "type": "relates_to"
+    },
+    {
+      "from": "add-memory-management",
+      "to": "optimize-ui-rendering",
+      "type": "relates_to"
+    },
+    {
+      "from": "implement-data-validation",
+      "to": "security-hardening",
+      "type": "blocks"
+    },
+    {
+      "from": "optimize-persistence",
+      "to": "add-background-tasks",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-crash-reporting",
+      "to": "add-health-monitoring",
+      "type": "relates_to"
+    }
+  ],
+  "parallel_opportunities": [
+    "implement-error-recovery and optimize-persistence can run in parallel",
+    "optimize-ui-rendering and implement-crash-reporting can run in parallel",
+    "add-background-tasks and security-hardening can run in parallel"
+  ],
+  "risks": [
+    "App Sandbox may break existing URL scheme functionality",
+    "Background tasks may still consume too much CPU on older Macs",
+    "Crash reporting may collect too much data (privacy concerns)"
+  ],
+  "dependencies": {
+    "external": [
+      "macOS security frameworks",
+      "Code signing certificate"
+    ]
+  }
+}

@@ -1,0 +1,269 @@
+{
+  "category": "Data Export & Analytics",
+  "priority": "HIGH",
+  "total_estimate_hours": 24,
+  "description": "Enable users to export session data in multiple formats (JSON, CSV, text) and provide rich analytics and insights about agent usage patterns",
+  "tasks": [
+    {
+      "id": "design-export-schema",
+      "description": "Design comprehensive export data schema for all formats",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "JSON export schema defined with all session and event fields",
+        "CSV schema optimized for spreadsheet analysis",
+        "Plain text format designed for readability",
+        "Schema versioning strategy defined",
+        "Documentation with examples for each format"
+      ],
+      "technical_notes": [
+        "JSON: Complete session data with nested events",
+        "CSV: Flattened structure with one row per event",
+        "Text: Markdown-formatted timeline",
+        "Include metadata: export_version, export_date, sentinel_version",
+        "Consider future extensibility (custom fields per agent type)"
+      ],
+      "files_to_modify": [
+        "docs/EXPORT_SCHEMA.md (NEW)"
+      ]
+    },
+    {
+      "id": "implement-json-export",
+      "description": "Implement JSON export with filtering options",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Export single session to JSON",
+        "Export multiple sessions with date range filter",
+        "Export all sessions option",
+        "Pretty-printed JSON with proper encoding",
+        "File save dialog with suggested filename (sentinel-export-YYYY-MM-DD.json)"
+      ],
+      "technical_notes": [
+        "Use JSONEncoder with .prettyPrinted and .sortedKeys",
+        "Filter options: date range, agent type, status",
+        "Preserve all timestamps in ISO 8601 format",
+        "Use NSSavePanel for native macOS save dialog",
+        "Handle large exports (1000+ sessions) efficiently"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ExportService.swift (NEW)",
+        "sentinel/Models/ExportConfiguration.swift (NEW)",
+        "sentinel/Views/ExportView.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-csv-export",
+      "description": "Implement CSV export with Excel compatibility",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Flattened CSV structure with headers",
+        "Excel-compatible encoding (UTF-8 with BOM)",
+        "Proper escaping of commas and quotes",
+        "Same filtering options as JSON export",
+        "Opens correctly in Excel and Google Sheets"
+      ],
+      "technical_notes": [
+        "One row per event with session context columns",
+        "Columns: session_id, pid, agent_type, event_type, event_time, duration, tool_name, working_directory",
+        "Use RFC 4180 CSV standard",
+        "Add UTF-8 BOM for Excel compatibility: \\uFEFF",
+        "Quote fields containing commas, newlines, or quotes"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ExportService.swift",
+        "sentinel/Services/CSVFormatter.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-text-export",
+      "description": "Implement human-readable text/markdown export",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Markdown-formatted timeline for each session",
+        "Human-readable timestamps and durations",
+        "Hierarchical structure (session → events)",
+        "Summary statistics at top",
+        "Properly formatted for viewing in text editors and GitHub"
+      ],
+      "technical_notes": [
+        "Use Markdown headings, lists, and code blocks",
+        "Format: # Session [PID] - [Working Dir]",
+        "Event timeline with relative timestamps",
+        "Include session summary: total duration, event count, tool usage",
+        "Code block for detailed event data"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ExportService.swift",
+        "sentinel/Services/MarkdownFormatter.swift (NEW)"
+      ]
+    },
+    {
+      "id": "create-analytics-engine",
+      "description": "Create analytics engine to compute usage statistics",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Compute aggregate statistics across all sessions",
+        "Calculate per-agent metrics",
+        "Tool usage frequency and duration analysis",
+        "Time-based analysis (hourly, daily, weekly patterns)",
+        "Efficient computation with caching"
+      ],
+      "technical_notes": [
+        "Metrics: total sessions, total time, avg session duration, sessions per day",
+        "Tool metrics: most used tools, longest running tools, tool success rate",
+        "Agent comparison: sessions per agent, time per agent",
+        "Use Combine for reactive updates when new sessions added",
+        "Cache computed stats, invalidate on data changes"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/AnalyticsEngine.swift (NEW)",
+        "sentinel/Models/AnalyticsMetrics.swift (NEW)"
+      ]
+    },
+    {
+      "id": "design-analytics-ui",
+      "description": "Design and implement analytics dashboard UI",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Analytics tab in main window with charts and stats",
+        "Summary cards showing key metrics",
+        "Time-based charts (sessions over time)",
+        "Tool usage breakdown visualization",
+        "Agent comparison view",
+        "Export analytics data as image or PDF"
+      ],
+      "technical_notes": [
+        "Use Swift Charts framework for visualizations",
+        "Summary cards: total sessions, total hours, most active agent, favorite tool",
+        "Bar chart: sessions per day (last 30 days)",
+        "Pie chart: tool usage distribution",
+        "Line chart: session duration trends",
+        "Support dark mode with appropriate chart colors"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/AnalyticsView.swift (NEW)",
+        "sentinel/Views/Components/MetricCard.swift (NEW)",
+        "sentinel/Views/Components/SessionChart.swift (NEW)"
+      ]
+    },
+    {
+      "id": "add-export-ui",
+      "description": "Add export UI to main window and context menus",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Export button in toolbar with format dropdown",
+        "Right-click context menu on sessions to export",
+        "Export options dialog with filters",
+        "Progress indicator for large exports",
+        "Success/failure notifications",
+        "Keyboard shortcut (⌘E) for quick export"
+      ],
+      "technical_notes": [
+        "Toolbar button with split menu (JSON, CSV, Text, All Formats)",
+        "Context menu: Export Session, Export Selected Sessions",
+        "Export dialog: format picker, date range, agent filter, destination",
+        "Progress sheet for exports >100 sessions",
+        "Notification on completion with Open File action"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/MainWindow.swift",
+        "sentinel/Views/ExportView.swift",
+        "sentinel/Views/SessionListView.swift"
+      ]
+    },
+    {
+      "id": "implement-auto-export",
+      "description": "Implement automatic periodic export feature",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Settings option to enable automatic export",
+        "Configurable export schedule (daily, weekly, monthly)",
+        "Configurable export format and destination",
+        "Background export without user intervention",
+        "Export rotation (keep last N exports, auto-delete old ones)"
+      ],
+      "technical_notes": [
+        "Use Timer with configurable interval",
+        "Settings: enable/disable, frequency, format, destination folder",
+        "Default destination: ~/Documents/Sentinel Exports/",
+        "Filename pattern: sentinel-auto-export-YYYY-MM-DD-HHmm.{json,csv,txt}",
+        "Rotation: keep last 10 exports by default",
+        "Silent operation with notification only on error"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/AutoExportService.swift (NEW)",
+        "sentinel/Views/SettingsView.swift",
+        "sentinel/Models/ExportConfiguration.swift"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "design-export-schema",
+      "to": "implement-json-export",
+      "type": "blocks"
+    },
+    {
+      "from": "design-export-schema",
+      "to": "implement-csv-export",
+      "type": "blocks"
+    },
+    {
+      "from": "design-export-schema",
+      "to": "implement-text-export",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-json-export",
+      "to": "add-export-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-csv-export",
+      "to": "add-export-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-text-export",
+      "to": "add-export-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "create-analytics-engine",
+      "to": "design-analytics-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "add-export-ui",
+      "to": "implement-auto-export",
+      "type": "blocks"
+    },
+    {
+      "from": "design-analytics-ui",
+      "to": "implement-auto-export",
+      "type": "relates_to"
+    }
+  ],
+  "parallel_opportunities": [
+    "implement-json-export, implement-csv-export, implement-text-export can run in parallel",
+    "create-analytics-engine can run in parallel with export implementations",
+    "design-analytics-ui can start while export UI is being developed"
+  ],
+  "risks": [
+    "Large exports (10k+ sessions) may cause memory issues - need streaming approach",
+    "Chart rendering performance with large datasets",
+    "Excel compatibility quirks across different versions"
+  ],
+  "dependencies": {
+    "external": [
+      "Swift Charts framework (macOS 13+)"
+    ]
+  }
+}

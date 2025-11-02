@@ -1,0 +1,283 @@
+{
+  "category": "Testing & Quality Assurance",
+  "priority": "CRITICAL",
+  "total_estimate_hours": 22,
+  "description": "Establish comprehensive testing infrastructure, CI/CD pipelines, and quality assurance processes to ensure production readiness",
+  "tasks": [
+    {
+      "id": "setup-unit-test-framework",
+      "description": "Set up comprehensive unit testing framework",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "XCTest framework configured for all modules",
+        "Test targets created for each component",
+        "Mocking framework integrated (e.g., Mockingbird)",
+        "Test utilities and helpers created",
+        "Sample tests for critical components"
+      ],
+      "technical_notes": [
+        "Test targets: SentinelTests, SentinelServicesTests, SentinelUITests",
+        "Mock protocols for external dependencies (URLSession, FileManager, UserDefaults)",
+        "Test utilities: SessionFactory, EventBuilder, test fixtures",
+        "Coverage baseline: 60% initially, target 90%+",
+        "Use @testable import for internal access"
+      ],
+      "files_to_modify": [
+        "sentinel.xcodeproj/project.pbxproj",
+        "sentinelTests/TestUtilities.swift (NEW)",
+        "sentinelTests/Mocks/ (NEW directory)"
+      ]
+    },
+    {
+      "id": "write-model-tests",
+      "description": "Write unit tests for all data models",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "100% coverage for all model types",
+        "Codable encoding/decoding tested",
+        "Equatable/Hashable implementations tested",
+        "Edge cases and invalid data tested",
+        "Performance tests for large datasets"
+      ],
+      "technical_notes": [
+        "Test AgentSession: initialization, codable, state transitions",
+        "Test HookEvent: all event types, parsing, validation",
+        "Test AgentType: registration, equality",
+        "Edge cases: nil values, empty strings, extreme dates",
+        "Performance: encode/decode 1000 sessions <100ms",
+        "Use XCTAssert variants appropriately"
+      ],
+      "files_to_modify": [
+        "sentinelTests/Models/AgentSessionTests.swift (NEW)",
+        "sentinelTests/Models/HookEventTests.swift (NEW)",
+        "sentinelTests/Models/AgentTypeTests.swift (NEW)"
+      ]
+    },
+    {
+      "id": "write-service-tests",
+      "description": "Write tests for all service layer components",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "URLSchemeHandler parsing tested with valid/invalid URLs",
+        "SessionManager state management tested",
+        "PersistenceService save/load tested",
+        "NotificationManager delivery tested",
+        "ProcessMonitor PID tracking tested",
+        "90%+ code coverage for services"
+      ],
+      "technical_notes": [
+        "URLSchemeHandler: test all hook types, malformed URLs, missing params",
+        "SessionManager: test session creation, updates, cleanup",
+        "PersistenceService: mock FileManager, test error handling",
+        "NotificationManager: mock UNUserNotificationCenter",
+        "ProcessMonitor: mock process checks, test cleanup logic",
+        "Use dependency injection for testability"
+      ],
+      "files_to_modify": [
+        "sentinelTests/Services/URLSchemeHandlerTests.swift (NEW)",
+        "sentinelTests/Services/SessionManagerTests.swift (NEW)",
+        "sentinelTests/Services/PersistenceServiceTests.swift (NEW)",
+        "sentinelTests/Services/NotificationManagerTests.swift (NEW)",
+        "sentinelTests/Services/ProcessMonitorTests.swift (NEW)"
+      ]
+    },
+    {
+      "id": "write-viewmodel-tests",
+      "description": "Write tests for ViewModels and business logic",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "MenuBarViewModel state transitions tested",
+        "SessionManager integration tested",
+        "Published property updates verified",
+        "Combine pipelines tested",
+        "Mock dependencies injected"
+      ],
+      "technical_notes": [
+        "MenuBarViewModel: test status aggregation, icon selection",
+        "SessionManager: test filtering, sorting, search",
+        "Combine testing: use expectation for async publishers",
+        "Mock services: URLSchemeHandler, NotificationManager",
+        "Test memory leaks with weak/strong references",
+        "Use XCTPublisher for Combine assertions"
+      ],
+      "files_to_modify": [
+        "sentinelTests/ViewModels/MenuBarViewModelTests.swift (NEW)",
+        "sentinelTests/ViewModels/SessionManagerTests.swift (NEW)"
+      ]
+    },
+    {
+      "id": "setup-ui-tests",
+      "description": "Set up UI testing with XCUITest",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "UI test target configured",
+        "Page Object pattern implemented",
+        "Critical user flows tested",
+        "Accessibility identifiers added",
+        "Screenshot tests for key views"
+      ],
+      "technical_notes": [
+        "UI test target: SentinelUITests",
+        "Page Objects: MenuBarPage, SessionListPage, SettingsPage",
+        "Critical flows: open app, view session, export, change settings",
+        "Accessibility IDs: sessionList, menuBarIcon, exportButton, etc.",
+        "Screenshot comparison: use XCTAttachment for visual regression",
+        "Test on light and dark mode"
+      ],
+      "files_to_modify": [
+        "sentinelUITests/PageObjects/ (NEW directory)",
+        "sentinelUITests/FlowTests/ (NEW directory)",
+        "sentinel/Views/*.swift (add accessibilityIdentifier)"
+      ]
+    },
+    {
+      "id": "setup-ci-pipeline",
+      "description": "Set up CI/CD pipeline with GitHub Actions",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "GitHub Actions workflow for CI",
+        "Automated testing on every PR",
+        "Code coverage reporting",
+        "Automated build validation",
+        "Slack/Discord notifications on failure"
+      ],
+      "technical_notes": [
+        "Workflow: .github/workflows/ci.yml",
+        "Triggers: push to main, pull requests",
+        "Jobs: build, test, coverage",
+        "macOS runner: macos-latest",
+        "Commands: xcodebuild test, xcov for coverage",
+        "Upload coverage to Codecov or Coveralls",
+        "Notify on Slack webhook on failure",
+        "Required: 80% coverage to merge"
+      ],
+      "files_to_modify": [
+        ".github/workflows/ci.yml (NEW)",
+        ".github/workflows/coverage.yml (NEW)",
+        "README.md (add CI badge)"
+      ]
+    },
+    {
+      "id": "add-linting-formatting",
+      "description": "Add code linting and formatting tools",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "SwiftLint integrated with rules",
+        "SwiftFormat configured",
+        "Pre-commit hooks set up",
+        "CI enforces linting",
+        "Documentation for code style"
+      ],
+      "technical_notes": [
+        "SwiftLint: .swiftlint.yml with project rules",
+        "Rules: line length 120, force unwrap warning, trailing whitespace error",
+        "SwiftFormat: .swiftformat with consistent style",
+        "Pre-commit: run swiftformat and swiftlint before commit",
+        "CI: fail build on lint errors",
+        "Document: CONTRIBUTING.md with style guide",
+        "Install: brew install swiftlint swiftformat"
+      ],
+      "files_to_modify": [
+        ".swiftlint.yml (NEW)",
+        ".swiftformat (NEW)",
+        ".git/hooks/pre-commit (NEW)",
+        ".github/workflows/lint.yml (NEW)",
+        "CONTRIBUTING.md (NEW)"
+      ]
+    },
+    {
+      "id": "create-integration-tests",
+      "description": "Create end-to-end integration tests",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Full workflow tests (hook → display → export)",
+        "Multi-session scenario tests",
+        "Error recovery tests",
+        "Performance tests under load",
+        "Integration with real hooks tested"
+      ],
+      "technical_notes": [
+        "Test scenarios: receive hook, create session, update UI, persist, export",
+        "Multi-session: 10+ concurrent sessions, verify no conflicts",
+        "Error recovery: corrupted data, missing files, invalid hooks",
+        "Performance: 100 sessions created, UI responsive <100ms",
+        "Real hooks: shell script to send sentinel:// URLs",
+        "Use XCTestExpectation for async operations"
+      ],
+      "files_to_modify": [
+        "sentinelTests/Integration/WorkflowTests.swift (NEW)",
+        "sentinelTests/Integration/MultiSessionTests.swift (NEW)",
+        "sentinelTests/Integration/PerformanceTests.swift (NEW)",
+        "scripts/send-test-hook.sh (NEW)"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "setup-unit-test-framework",
+      "to": "write-model-tests",
+      "type": "blocks"
+    },
+    {
+      "from": "setup-unit-test-framework",
+      "to": "write-service-tests",
+      "type": "blocks"
+    },
+    {
+      "from": "setup-unit-test-framework",
+      "to": "write-viewmodel-tests",
+      "type": "blocks"
+    },
+    {
+      "from": "write-service-tests",
+      "to": "create-integration-tests",
+      "type": "blocks"
+    },
+    {
+      "from": "setup-ui-tests",
+      "to": "create-integration-tests",
+      "type": "relates_to"
+    },
+    {
+      "from": "write-model-tests",
+      "to": "setup-ci-pipeline",
+      "type": "blocks"
+    },
+    {
+      "from": "write-service-tests",
+      "to": "setup-ci-pipeline",
+      "type": "blocks"
+    },
+    {
+      "from": "setup-ci-pipeline",
+      "to": "add-linting-formatting",
+      "type": "relates_to"
+    }
+  ],
+  "parallel_opportunities": [
+    "write-model-tests, write-service-tests, write-viewmodel-tests can run in parallel",
+    "setup-ui-tests can run in parallel with unit tests",
+    "add-linting-formatting can run in parallel with testing work"
+  ],
+  "risks": [
+    "Achieving high code coverage may take longer than estimated",
+    "UI tests may be flaky on CI runners",
+    "Mock setup complexity for services with many dependencies"
+  ],
+  "dependencies": {
+    "external": [
+      "XCTest framework",
+      "GitHub Actions macOS runners",
+      "SwiftLint and SwiftFormat tools",
+      "Code coverage tools (xcov, Codecov)"
+    ]
+  }
+}

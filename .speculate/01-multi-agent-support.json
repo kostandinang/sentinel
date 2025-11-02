@@ -1,0 +1,269 @@
+{
+  "category": "Multi-Agent Support",
+  "priority": "CRITICAL",
+  "total_estimate_hours": 28,
+  "description": "Extend Sentinel to support multiple AI agent types beyond Claude Code, including Cursor, GitHub Copilot, and a plugin system for future agents",
+  "tasks": [
+    {
+      "id": "design-agent-abstraction",
+      "description": "Design abstract agent interface and plugin architecture",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "AgentProtocol interface defined with all required methods",
+        "Plugin discovery mechanism designed",
+        "Event schema standardized across agent types",
+        "Documentation created with examples"
+      ],
+      "technical_notes": [
+        "Use Swift protocols with associated types",
+        "Consider using Protocol Witness pattern for flexibility",
+        "Event schema should be JSON-based for cross-agent compatibility",
+        "Plugin manifest format (agent-name, version, supported-events, url-scheme)"
+      ],
+      "files_to_modify": [
+        "sentinel/Models/AgentType.swift",
+        "sentinel/Models/AgentProtocol.swift (NEW)",
+        "sentinel/Models/AgentEvent.swift (NEW)"
+      ]
+    },
+    {
+      "id": "refactor-claude-adapter",
+      "description": "Refactor existing Claude Code integration to use new agent protocol",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Claude Code logic extracted into ClaudeCodeAgent adapter",
+        "All existing functionality preserved (zero regressions)",
+        "URL scheme handler updated to route by agent type",
+        "Tests pass for existing Claude Code workflows"
+      ],
+      "technical_notes": [
+        "Create ClaudeCodeAgent: AgentProtocol implementation",
+        "Move Claude-specific parsing logic from URLSchemeHandler",
+        "Update SessionManager to work with AgentProtocol",
+        "Ensure backward compatibility with existing hooks"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/URLSchemeHandler.swift",
+        "sentinel/ViewModels/SessionManager.swift",
+        "sentinel/Adapters/ClaudeCodeAgent.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-cursor-agent",
+      "description": "Implement Cursor AI agent adapter with custom URL scheme",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "CursorAgent adapter implements AgentProtocol",
+        "sentinel-cursor:// URL scheme registered and working",
+        "Cursor-specific events mapped to standard event model",
+        "Documentation for Cursor hook configuration created"
+      ],
+      "technical_notes": [
+        "Research Cursor's extension API and hook capabilities",
+        "URL scheme: sentinel-cursor://hook?type=X&session_id=Y",
+        "Cursor uses session IDs instead of PIDs (adapter handles mapping)",
+        "Consider Cursor's VS Code extension integration points"
+      ],
+      "files_to_modify": [
+        "sentinel/Adapters/CursorAgent.swift (NEW)",
+        "sentinel/Info.plist (add sentinel-cursor scheme)",
+        "Resources/cursor-hooks-example.json (NEW)"
+      ]
+    },
+    {
+      "id": "implement-copilot-agent",
+      "description": "Implement GitHub Copilot agent adapter",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "CopilotAgent adapter implements AgentProtocol",
+        "Integration with Copilot telemetry or extension API",
+        "Events captured: suggestion-accepted, code-generated, chat-message",
+        "Documentation for Copilot integration created"
+      ],
+      "technical_notes": [
+        "Copilot may require VS Code extension bridge",
+        "Consider polling Copilot's local logs as fallback",
+        "URL scheme: sentinel-copilot:// or file-watching approach",
+        "Session tracking based on VS Code workspace"
+      ],
+      "files_to_modify": [
+        "sentinel/Adapters/CopilotAgent.swift (NEW)",
+        "sentinel/Services/FileWatcher.swift (NEW, if needed)",
+        "Resources/copilot-integration-guide.md (NEW)"
+      ]
+    },
+    {
+      "id": "create-agent-registry",
+      "description": "Create agent registry system for dynamic agent management",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "AgentRegistry singleton manages all registered agents",
+        "Dynamic agent registration at runtime",
+        "Agent discovery from plugin directory",
+        "Settings UI shows all registered agents with enable/disable toggles"
+      ],
+      "technical_notes": [
+        "Registry pattern with thread-safe access",
+        "Plugin directory: ~/Library/Application Support/Sentinel/Agents/",
+        "Plugin manifest validation on load",
+        "Support for agent-specific configuration"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/AgentRegistry.swift (NEW)",
+        "sentinel/Views/SettingsView.swift",
+        "sentinel/ViewModels/SessionManager.swift"
+      ]
+    },
+    {
+      "id": "update-ui-agent-filtering",
+      "description": "Update UI to filter and display sessions by agent type",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Session list shows agent icon/badge for each session",
+        "Filter dropdown to show sessions from specific agent",
+        "Agent-specific coloring in session timeline",
+        "Menu bar icon aggregates status across all agents"
+      ],
+      "technical_notes": [
+        "Add agentType property to SessionRowView",
+        "SF Symbols for agent icons (generic for custom agents)",
+        "Color palette: Claude=blue, Cursor=purple, Copilot=orange",
+        "Aggregation logic: show most critical status across agents"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SessionListView.swift",
+        "sentinel/Views/SessionRowView.swift (NEW)",
+        "sentinel/ViewModels/MenuBarViewModel.swift",
+        "sentinel/Views/SessionDetailView.swift"
+      ]
+    },
+    {
+      "id": "add-agent-settings",
+      "description": "Add agent-specific settings panel to configure each agent",
+      "estimate_hours": 4,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Settings UI has Agent tab with per-agent configuration",
+        "Enable/disable toggle for each agent",
+        "Agent-specific options (URL scheme, polling interval, etc.)",
+        "Copy hook configuration to clipboard per agent",
+        "Validation for agent-specific settings"
+      ],
+      "technical_notes": [
+        "Use dynamic form generation based on agent's configuration schema",
+        "Persist settings in UserDefaults with agent-specific keys",
+        "Provide sensible defaults for each agent",
+        "Real-time validation with error messages"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SettingsView.swift",
+        "sentinel/Views/AgentSettingsView.swift (NEW)",
+        "sentinel/Models/AgentConfiguration.swift (NEW)"
+      ]
+    },
+    {
+      "id": "write-multiagent-tests",
+      "description": "Write comprehensive tests for multi-agent functionality",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Unit tests for AgentRegistry (registration, lookup, removal)",
+        "Integration tests for each agent adapter",
+        "Tests for concurrent sessions from different agents",
+        "Tests for agent-specific event parsing",
+        "95%+ code coverage for new agent system"
+      ],
+      "technical_notes": [
+        "Mock AgentProtocol implementations for testing",
+        "Test edge cases: unknown agent types, malformed events",
+        "Performance tests: 20+ concurrent sessions across 3 agents",
+        "Use XCTest framework with async testing support"
+      ],
+      "files_to_modify": [
+        "sentinelTests/AgentRegistryTests.swift (NEW)",
+        "sentinelTests/ClaudeCodeAgentTests.swift (NEW)",
+        "sentinelTests/CursorAgentTests.swift (NEW)",
+        "sentinelTests/MultiAgentIntegrationTests.swift (NEW)"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "design-agent-abstraction",
+      "to": "refactor-claude-adapter",
+      "type": "blocks"
+    },
+    {
+      "from": "design-agent-abstraction",
+      "to": "create-agent-registry",
+      "type": "blocks"
+    },
+    {
+      "from": "refactor-claude-adapter",
+      "to": "implement-cursor-agent",
+      "type": "blocks"
+    },
+    {
+      "from": "refactor-claude-adapter",
+      "to": "implement-copilot-agent",
+      "type": "blocks"
+    },
+    {
+      "from": "create-agent-registry",
+      "to": "implement-cursor-agent",
+      "type": "blocks"
+    },
+    {
+      "from": "create-agent-registry",
+      "to": "implement-copilot-agent",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-cursor-agent",
+      "to": "update-ui-agent-filtering",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-copilot-agent",
+      "to": "update-ui-agent-filtering",
+      "type": "blocks"
+    },
+    {
+      "from": "create-agent-registry",
+      "to": "add-agent-settings",
+      "type": "blocks"
+    },
+    {
+      "from": "update-ui-agent-filtering",
+      "to": "write-multiagent-tests",
+      "type": "blocks"
+    },
+    {
+      "from": "add-agent-settings",
+      "to": "write-multiagent-tests",
+      "type": "blocks"
+    }
+  ],
+  "parallel_opportunities": [
+    "implement-cursor-agent and implement-copilot-agent can run in parallel after dependencies met",
+    "update-ui-agent-filtering and add-agent-settings can run in parallel after agents implemented"
+  ],
+  "risks": [
+    "Cursor and Copilot integration may require reverse engineering if no official APIs",
+    "Different agents may have incompatible event models",
+    "Performance impact with 3+ agents running simultaneously"
+  ],
+  "dependencies": {
+    "external": [
+      "Cursor extension API documentation",
+      "GitHub Copilot telemetry format",
+      "VS Code extension capabilities"
+    ]
+  }
+}

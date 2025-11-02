@@ -1,0 +1,237 @@
+{
+  "category": "Customization & Theming",
+  "priority": "MEDIUM",
+  "total_estimate_hours": 16,
+  "description": "Allow users to customize Sentinel's appearance with custom icon themes, color schemes, and visual preferences",
+  "tasks": [
+    {
+      "id": "design-theme-system",
+      "description": "Design flexible theme system architecture",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Theme model defined with all customizable elements",
+        "Theme file format specified (JSON)",
+        "Built-in themes designed (Default, Minimal, Vibrant, Monochrome)",
+        "Theme validation rules documented",
+        "API for theme switching designed"
+      ],
+      "technical_notes": [
+        "Theme properties: colors (status icons, backgrounds, accents), fonts, icon set",
+        "JSON schema: name, version, author, colors{idle, active, tool, error, background, text}, icons{menubar, session}",
+        "Validation: color format (hex), required fields, version compatibility",
+        "Hot-reload support for theme changes",
+        "Theme inheritance (extend base theme)"
+      ],
+      "files_to_modify": [
+        "sentinel/Models/Theme.swift (NEW)",
+        "docs/THEME_SPEC.md (NEW)"
+      ]
+    },
+    {
+      "id": "implement-theme-engine",
+      "description": "Implement theme engine for dynamic styling",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "ThemeManager singleton manages active theme",
+        "SwiftUI environment for theme access",
+        "Dynamic color resolution from theme",
+        "Theme change propagates to all views",
+        "Persisted theme preference"
+      ],
+      "technical_notes": [
+        "ThemeManager: @Published currentTheme property",
+        "Custom EnvironmentKey for theme injection",
+        "Color resolution: theme colors override semantic colors",
+        "Use Combine to notify views of theme changes",
+        "UserDefaults: activeThemeId",
+        "Support for dark mode override per theme"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ThemeManager.swift (NEW)",
+        "sentinel/Environment/ThemeEnvironment.swift (NEW)",
+        "sentinel/Extensions/Color+Theme.swift (NEW)"
+      ]
+    },
+    {
+      "id": "create-builtin-themes",
+      "description": "Create and package built-in theme collection",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "5 built-in themes created and tested",
+        "Each theme supports light and dark mode",
+        "Themes validated against spec",
+        "Theme JSON files bundled with app",
+        "Preview images generated for theme picker"
+      ],
+      "technical_notes": [
+        "Themes: Default (current), Minimal (grayscale), Vibrant (saturated colors), Solarized, Dracula",
+        "Each theme: JSON file + preview image (200x150 screenshot)",
+        "Bundle in Resources/Themes/",
+        "Generate previews programmatically or create manually",
+        "Test each theme in light and dark mode for accessibility"
+      ],
+      "files_to_modify": [
+        "sentinel/Resources/Themes/default.json (NEW)",
+        "sentinel/Resources/Themes/minimal.json (NEW)",
+        "sentinel/Resources/Themes/vibrant.json (NEW)",
+        "sentinel/Resources/Themes/solarized.json (NEW)",
+        "sentinel/Resources/Themes/dracula.json (NEW)"
+      ]
+    },
+    {
+      "id": "design-icon-sets",
+      "description": "Design alternate menu bar icon sets",
+      "estimate_hours": 3,
+      "status": "pending",
+      "acceptance_criteria": [
+        "3 icon set styles designed (Classic shield, Minimal dot, Activity ring)",
+        "Each set includes 4 states (idle, active, tool, error)",
+        "SF Symbols-based for consistency",
+        "Template images for proper menu bar rendering",
+        "Icons tested in light and dark menu bar"
+      ],
+      "technical_notes": [
+        "Classic: shield, shield.fill, shield.lefthalf.filled, exclamationmark.shield",
+        "Minimal: circle, circle.fill, circle.lefthalf.filled, exclamationmark.circle",
+        "Activity: circle.dashed, circle.hexagongrid.fill, chart.bar, exclamationmark.triangle",
+        "All icons: 18x18pt template images",
+        "Test on both light and dark macOS menu bars",
+        "Consider notched MacBook Pro menu bar constraints"
+      ],
+      "files_to_modify": [
+        "sentinel/Resources/Icons/IconSets.swift (NEW)",
+        "docs/ICON_DESIGN.md (NEW)"
+      ]
+    },
+    {
+      "id": "implement-icon-switching",
+      "description": "Implement menu bar icon set switching",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Icon set selection in settings",
+        "Menu bar icon updates when set changed",
+        "Smooth icon transitions",
+        "Icon set persisted across restarts",
+        "Preview of each icon set in settings"
+      ],
+      "technical_notes": [
+        "Settings UI: grid of icon set previews with radio buttons",
+        "MenuBarViewModel uses ThemeManager.currentIconSet",
+        "Icon transition: crossfade with 0.2s duration",
+        "UserDefaults: activeIconSet",
+        "Preview shows all 4 states for each set"
+      ],
+      "files_to_modify": [
+        "sentinel/ViewModels/MenuBarViewModel.swift",
+        "sentinel/Views/SettingsView.swift",
+        "sentinel/Services/ThemeManager.swift"
+      ]
+    },
+    {
+      "id": "add-theme-picker-ui",
+      "description": "Create theme picker UI in settings",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Appearance tab in settings with theme grid",
+        "Visual preview for each theme",
+        "Click to apply theme instantly",
+        "Current theme highlighted",
+        "Support for custom theme import"
+      ],
+      "technical_notes": [
+        "Grid layout: 2 columns, theme cards with preview image",
+        "Theme card: name, preview image, current indicator",
+        "Import button: file picker for .json theme files",
+        "Live preview: apply theme without closing settings",
+        "Validation on import with error messages"
+      ],
+      "files_to_modify": [
+        "sentinel/Views/SettingsView.swift",
+        "sentinel/Views/Components/ThemeCard.swift (NEW)",
+        "sentinel/Views/Components/ThemePicker.swift (NEW)"
+      ]
+    },
+    {
+      "id": "implement-custom-themes",
+      "description": "Support custom user-created themes",
+      "estimate_hours": 2,
+      "status": "pending",
+      "acceptance_criteria": [
+        "Import theme from JSON file",
+        "Export current theme as JSON",
+        "Theme editor for advanced users (optional)",
+        "Custom themes saved to Application Support",
+        "Theme validation with helpful error messages"
+      ],
+      "technical_notes": [
+        "Import: validate JSON schema, copy to ~/Library/Application Support/Sentinel/Themes/",
+        "Export: save current theme config with custom name",
+        "Theme editor: form with color pickers, icon selectors (advanced feature)",
+        "Validation: check required fields, color format, icon paths",
+        "Error messages: specific (e.g., 'Invalid color format for idle state: XYZ')"
+      ],
+      "files_to_modify": [
+        "sentinel/Services/ThemeManager.swift",
+        "sentinel/Views/ThemeEditorView.swift (NEW)",
+        "sentinel/Views/SettingsView.swift"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "design-theme-system",
+      "to": "implement-theme-engine",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-theme-engine",
+      "to": "create-builtin-themes",
+      "type": "blocks"
+    },
+    {
+      "from": "design-icon-sets",
+      "to": "implement-icon-switching",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-theme-engine",
+      "to": "implement-icon-switching",
+      "type": "blocks"
+    },
+    {
+      "from": "create-builtin-themes",
+      "to": "add-theme-picker-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "implement-icon-switching",
+      "to": "add-theme-picker-ui",
+      "type": "blocks"
+    },
+    {
+      "from": "add-theme-picker-ui",
+      "to": "implement-custom-themes",
+      "type": "blocks"
+    }
+  ],
+  "parallel_opportunities": [
+    "design-icon-sets can run in parallel with theme engine implementation",
+    "create-builtin-themes can be split across multiple developers"
+  ],
+  "risks": [
+    "Custom themes may break app appearance if not validated properly",
+    "Menu bar icons may not look good on all macOS versions",
+    "Performance impact of theme switching with many views"
+  ],
+  "dependencies": {
+    "external": [
+      "SF Symbols for icon sets",
+      "Color picker component (built-in macOS)"
+    ]
+  }
+}
