@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainWindow: View {
-    @ObservedObject private var sessionManager = SessionManager.shared
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var selectedSession: AgentSession?
     @State private var showingSettings = false
 

@@ -51,11 +51,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
-        // Create popover
+        // Create popover with environment object
+        let contentView = MenuBarView()
+            .environmentObject(SessionManager.shared)
+
         popover = NSPopover()
         popover?.contentSize = NSSize(width: 320, height: 400)
         popover?.behavior = .transient
-        popover?.contentViewController = NSHostingController(rootView: MenuBarView())
+        popover?.contentViewController = NSHostingController(rootView: contentView)
 
         // Monitor for outside clicks
         eventMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct MenuBarView: View {
     @StateObject private var viewModel = MenuBarViewModel()
-    @ObservedObject private var sessionManager = SessionManager.shared
+    @EnvironmentObject var sessionManager: SessionManager
     @State private var showingMainWindow = false
 
     var body: some View {
@@ -80,6 +80,7 @@ struct MenuBarView: View {
         .frame(width: 320)
         .sheet(isPresented: $showingMainWindow) {
             MainWindow()
+                .environmentObject(sessionManager)
         }
     }
 }
