@@ -41,17 +41,17 @@ View detailed information about all your sessions, including:
    ```bash
    cd ~/Projects
    git clone <repository-url>
-   cd sentinel/Sentinel
+   cd sentinel
    ```
 
 2. **Open in Xcode**:
 
    ```bash
-   open Package.swift
+   open sentinel/sentinelApp.swift
    ```
 
 3. **Build and Run**:
-   - Select "Sentinel" scheme
+   - Select **sentinel** scheme
    - Click Run (⌘R)
    - The app will appear in your menu bar
 
@@ -220,7 +220,7 @@ Sentinel/
 
 ### Sentinel isn't receiving events
 
-1. **Check hooks are configured**: Verify hooks are set by viewing `~/.claude/settings` and ensuring the `hooks` property is present and properly formatted
+1. **Check hooks are configured**: Verify hooks are set by viewing `~/.claude/settings.json` and ensuring the `hooks` property is present and properly formatted
 2. **Restart Claude Code**: Close all Claude Code sessions and start a new one
 3. **Check Console.app**: Look for error messages from Sentinel
 4. **Verify URL scheme**: Run `open "sentinel://hook?type=prompt-submit&pid=12345&pwd=/tmp"` in Terminal
