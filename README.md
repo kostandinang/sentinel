@@ -1,5 +1,12 @@
 # Sentinel 🛡️
 
+![Platform](https://img.shields.io/badge/platform-macOS-lightgrey)
+![Swift](https://img.shields.io/badge/Swift-5.9-orange)
+![SwiftUI](https://img.shields.io/badge/SwiftUI-blue)
+![License](https://img.shields.io/github/license/kostandinang/sentinel)
+![GitHub stars](https://img.shields.io/github/stars/kostandinang/sentinel)
+![GitHub issues](https://img.shields.io/github/issues/kostandinang/sentinel)
+
 **Sentinel** is a native macOS menu bar application that monitors and displays the status of AI coding agent sessions (Claude Code, Warp, Gemini CLI) with a clean, modern interface.
 
 ![Sentinel App Screenshot](screenshot.png)
