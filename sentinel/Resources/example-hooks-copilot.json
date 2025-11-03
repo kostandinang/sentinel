@@ -1,0 +1,76 @@
+{
+  "description": "GitHub Copilot integration hooks for Sentinel",
+  "note": "GitHub Copilot in VS Code requires a custom extension or MCP integration to send hooks. See README for setup instructions.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"open -g 'sentinel://hook?type=prompt-submit&pid=$PPID&pwd=$(pwd | sed 's/ /%20/g')&agent=copilot'\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"TOOL_NAME=$(python3 -c 'import sys, json; data = json.load(sys.stdin); print(data.get(\\\"tool_name\\\", \\\"Unknown\\\"))'); open -g \\\"sentinel://hook?type=tool-start&pid=$PPID&tool=$(echo \\\"$TOOL_NAME\\\" | sed 's/ /%20/g')&agent=copilot\\\"\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"TOOL_NAME=$(python3 -c 'import sys, json; data = json.load(sys.stdin); print(data.get(\\\"tool_name\\\", \\\"Unknown\\\"))'); open -g \\\"sentinel://hook?type=tool-complete&pid=$PPID&tool=$(echo \\\"$TOOL_NAME\\\" | sed 's/ /%20/g')&agent=copilot\\\"\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"open -g 'sentinel://hook?type=session-stop&pid=$PPID&agent=copilot'\""
+          }
+        ]
+      }
+    ]
+  },
+  "vscode_extension": {
+    "description": "VS Code extension integration points",
+    "events": {
+      "onChatPromptSubmit": "Triggered when user submits a prompt to Copilot Chat",
+      "onToolStart": "Triggered when Copilot starts using a tool/extension",
+      "onToolComplete": "Triggered when tool execution completes",
+      "onChatSessionEnd": "Triggered when Copilot Chat session ends"
+    },
+    "url_format": "sentinel://hook?type={type}&pid={pid}&pwd={workdir}&tool={toolname}&agent=copilot",
+    "example_command": "open -g 'sentinel://hook?type=prompt-submit&pid=12345&pwd=/path/to/project&agent=copilot'"
+  },
+  "mcp_integration": {
+    "description": "Model Context Protocol integration for GitHub Copilot",
+    "server_name": "sentinel-copilot-hooks",
+    "capabilities": [
+      "Send session lifecycle events to Sentinel",
+      "Track tool usage and execution",
+      "Monitor workspace context switches"
+    ],
+    "configuration": {
+      "sentinel_url_scheme": "sentinel://",
+      "track_prompts": true,
+      "track_tools": true,
+      "track_sessions": true
+    }
+  }
+}

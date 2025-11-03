@@ -10,7 +10,7 @@ import SwiftUI
 struct MenuBarView: View {
     @StateObject private var viewModel = MenuBarViewModel()
     @EnvironmentObject var sessionManager: SessionManager
-    @State private var showingMainWindow = false
+    let onOpenMainWindow: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -52,7 +52,7 @@ struct MenuBarView: View {
                         }
 
                         if sessionManager.activeSessions.count > 5 {
-                            Button(action: { showingMainWindow = true }) {
+                            Button(action: onOpenMainWindow) {
                                 HStack(spacing: 6) {
                                     Image(systemName: "ellipsis.circle.fill")
                                         .font(.caption)
@@ -75,7 +75,7 @@ struct MenuBarView: View {
 
             // Footer actions with keyboard hints
             HStack(spacing: 10) {
-                Button(action: { showingMainWindow = true }) {
+                Button(action: onOpenMainWindow) {
                     HStack(spacing: 6) {
                         Image(systemName: "square.grid.2x2")
                             .font(.system(size: 11))
@@ -99,10 +99,6 @@ struct MenuBarView: View {
             .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         }
         .frame(width: 340)
-        .sheet(isPresented: $showingMainWindow) {
-            MainWindow()
-                .environmentObject(sessionManager)
-        }
     }
 }
 
@@ -244,6 +240,7 @@ struct AgentTypeTag: View {
         case .claudeCode: return "Claude"
         case .gemini: return "Gemini"
         case .warp: return "Warp"
+        case .githubCopilot: return "Copilot"
         }
     }
 
@@ -252,6 +249,7 @@ struct AgentTypeTag: View {
         case .claudeCode: return .blue
         case .gemini: return .purple
         case .warp: return .green
+        case .githubCopilot: return .orange
         }
     }
 }

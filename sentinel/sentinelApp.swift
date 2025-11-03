@@ -24,6 +24,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
     private var eventMonitor: Any?
+    private var mainWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide from dock
@@ -51,12 +52,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
-        // Create popover with environment object
-        let contentView = MenuBarView()
+        // Create popover with environment object and pass window opener
+        let contentView = MenuBarView(onOpenMainWindow: { [weak self] in
+            self?.openMainWindow()
+            self?.closePopover()
+        })
             .environmentObject(SessionManager.shared)
 
         popover = NSPopover()
-        popover?.contentSize = NSSize(width: 320, height: 400)
+        popover?.contentSize = NSSize(width: 340, height: 400)
         popover?.behavior = .transient
         popover?.contentViewController = NSHostingController(rootView: contentView)
 
@@ -73,7 +77,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func setupStatusObserver() {
         Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.updateMenuBarIcon()
+            DispatchQueue.main.async {
+                self?.updateMenuBarIcon()
+            }
         }
     }
 
@@ -134,6 +140,36 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         popover?.performClose(nil)
     }
 
+    func openMainWindow() {
+        if let window = mainWindow, window.isVisible {
+            // Window exists and is visible, just bring it to front
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        // Create new window
+        let contentView = MainWindow()
+            .environmentObject(SessionManager.shared)
+
+        let hostingController = NSHostingController(rootView: contentView)
+        
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "Sentinel"
+        window.styleMask = [.titled, .closable, .miniaturizable, .resizable]
+        window.setContentSize(NSSize(width: 900, height: 650))
+        window.center()
+        window.setFrameAutosaveName("SentinelMainWindow")
+        window.isReleasedWhenClosed = false
+        
+        // Properly handle window lifecycle
+        window.delegate = self
+        
+        mainWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
     @objc func handleGetURLEvent(_ event: NSAppleEventDescriptor, replyEvent: NSAppleEventDescriptor) {
         guard let urlString = event.paramDescriptor(forKeyword: AEKeyword(keyDirectObject))?.stringValue,
               let url = URL(string: urlString) else {
@@ -162,5 +198,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let eventMonitor = eventMonitor {
             NSEvent.removeMonitor(eventMonitor)
         }
+    }
+}
+
+// MARK: - NSWindowDelegate
+extension AppDelegate: NSWindowDelegate {
+    func windowWillClose(_ notification: Notification) {
+        // Keep window reference but mark as closed for proper lifecycle management
+        if let window = notification.object as? NSWindow, window == mainWindow {
+            mainWindow = nil
+        }
+    }
+    
+    func windowDidBecomeKey(_ notification: Notification) {
+        // Ensure app is properly activated when window becomes key
+        NSApp.activate(ignoringOtherApps: false)
     }
 }

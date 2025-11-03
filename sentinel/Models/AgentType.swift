@@ -11,6 +11,7 @@ enum AgentType: String, Codable, CaseIterable {
     case claudeCode = "Claude Code"
     case warp = "Warp"
     case gemini = "Gemini"
+    case githubCopilot = "GitHub Copilot"
 
     var displayName: String {
         self.rawValue
@@ -24,6 +25,8 @@ enum AgentType: String, Codable, CaseIterable {
             return "bolt.fill"
         case .gemini:
             return "sparkles"
+        case .githubCopilot:
+            return "chevron.left.forwardslash.chevron.right"
         }
     }
 
@@ -37,6 +40,8 @@ enum AgentType: String, Codable, CaseIterable {
             self = .warp
         case "gemini", "gemini-cli", "geminicli":
             self = .gemini
+        case "copilot", "github-copilot", "githubcopilot", "github copilot":
+            self = .githubCopilot
         default:
             return nil
         }

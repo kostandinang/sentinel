@@ -58,20 +58,31 @@ struct AgentTagView: View {
             .font(size.fontSize)
             .foregroundColor(.primary)
             .padding(size.padding)
+            .frame(minWidth: minWidth)
             .overlay(
                 RoundedRectangle(cornerRadius: size.cornerRadius)
                     .strokeBorder(Color.primary.opacity(0.3), lineWidth: size.lineWidth)
             )
+            .help(agentType.tagTooltip)
+    }
+
+    private var minWidth: CGFloat {
+        switch size {
+        case .small: return 32
+        case .medium: return 38
+        case .large: return 44
+        }
     }
 }
 
-// Extension to get short tag labels for agent types
+// Extension to get short name labels for agent types
 extension AgentType {
     var tagLabel: String {
         switch self {
-        case .claudeCode: return "C"
-        case .gemini: return "G"
-        case .warp: return "W"
+        case .claudeCode: return "CC"
+        case .gemini: return "Gemini"
+        case .warp: return "Warp"
+        case .githubCopilot: return "Copilot"
         }
     }
 
@@ -80,6 +91,7 @@ extension AgentType {
         case .claudeCode: return "Claude Code"
         case .gemini: return "Gemini"
         case .warp: return "Warp"
+        case .githubCopilot: return "GitHub Copilot"
         }
     }
 }

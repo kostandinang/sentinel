@@ -6,7 +6,7 @@
 
 ## Features
 
-- **Multi-Agent Support**: Track sessions from Claude Code, Warp.dev, and Gemini CLI
+- **Multi-Agent Support**: Track sessions from Claude Code, Warp.dev, Gemini CLI, and GitHub Copilot
 - **Real-time Monitoring**: Track AI coding agent sessions as they run
 - **Menu Bar Integration**: Unobtrusive status indicator with dynamic icons
 - **Session History**: View all active and recent sessions
@@ -67,6 +67,7 @@ To enable Sentinel monitoring, you need to configure hooks for your AI coding ag
 - **Claude Code**: Uses `~/.claude/settings.json`
 - **Warp.dev**: Uses Warp's hooks configuration
 - **Gemini CLI**: Uses Gemini's hooks configuration
+- **GitHub Copilot**: Uses VS Code extension or MCP integration
 
 ### 1. Install the Hooks Configuration
 
@@ -144,6 +145,7 @@ If you're using Warp's AI features with agent mode:
 **Step 2:** Use the hooks configuration from `Sentinel/Resources/example-hooks-warp.json`
 
 The key difference is adding `&agent=warp` to each URL, for example:
+
 ```
 sentinel://hook?type=prompt-submit&pid=$PPID&pwd=$(pwd)&agent=warp
 ```
@@ -157,9 +159,64 @@ If you're using the Gemini CLI tool with hooks support:
 **Step 2:** Use the hooks configuration from `Sentinel/Resources/example-hooks-gemini.json`
 
 The key difference is adding `&agent=gemini` to each URL, for example:
+
 ```
 sentinel://hook?type=prompt-submit&pid=$PPID&pwd=$(pwd)&agent=gemini
 ```
+
+#### For GitHub Copilot
+
+GitHub Copilot integration requires a VS Code extension or MCP (Model Context Protocol) server to send hooks to Sentinel:
+
+**Option 1: VS Code Extension Integration (Recommended)**
+
+Create a custom VS Code extension that listens to Copilot events and sends hooks to Sentinel. The extension should:
+
+1. Listen to GitHub Copilot Chat events
+2. Track when prompts are submitted
+3. Monitor tool/extension usage
+4. Send events to Sentinel via URL scheme
+
+Example code for your extension:
+
+```typescript
+import * as vscode from "vscode";
+import { exec } from "child_process";
+
+// Send hook to Sentinel
+function sendSentinelHook(type: string, toolName?: string) {
+  const pid = process.pid;
+  const pwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "";
+  let url = `sentinel://hook?type=${type}&pid=${pid}&pwd=${encodeURIComponent(
+    pwd
+  )}&agent=copilot`;
+
+  if (toolName) {
+    url += `&tool=${encodeURIComponent(toolName)}`;
+  }
+
+  exec(`open -g '${url}'`);
+}
+
+// Example: Listen to Copilot Chat
+vscode.chat.onDidStartChat(() => {
+  sendSentinelHook("prompt-submit");
+});
+```
+
+**Option 2: MCP Server Integration**
+
+Use the Model Context Protocol to create a server that bridges GitHub Copilot and Sentinel. See `example-hooks-copilot.json` for the complete configuration format.
+
+**Option 3: Manual Testing**
+
+You can test the integration manually by running:
+
+```bash
+open -g 'sentinel://hook?type=prompt-submit&pid=$$&pwd='$(pwd)'&agent=copilot'
+```
+
+**Note:** GitHub Copilot doesn't natively support hooks like Claude Code. Full integration requires developing a custom VS Code extension. See `Sentinel/Resources/example-hooks-copilot.json` for detailed integration guidelines.
 
 ### 2. Launch Sentinel
 
@@ -186,20 +243,21 @@ Sentinel uses a custom URL scheme (`sentinel://`) to receive events from AI codi
 
 ### Hook Types
 
-| Hook Type       | Trigger                   | Data                            |
-| --------------- | ------------------------- | ------------------------------- |
-| `prompt-submit` | User submits a prompt     | PID, working directory, agent   |
-| `tool-start`    | Agent starts using a tool | PID, tool name, agent           |
-| `tool-complete` | Tool execution completes  | PID, tool name, agent           |
-| `session-stop`  | Session ends              | PID, agent                      |
+| Hook Type       | Trigger                   | Data                          |
+| --------------- | ------------------------- | ----------------------------- |
+| `prompt-submit` | User submits a prompt     | PID, working directory, agent |
+| `tool-start`    | Agent starts using a tool | PID, tool name, agent         |
+| `tool-complete` | Tool execution completes  | PID, tool name, agent         |
+| `session-stop`  | Session ends              | PID, agent                    |
 
 ### Supported Agents
 
-| Agent           | Icon      | Status     |
-| --------------- | --------- | ---------- |
-| Claude Code     | Terminal  | ✅ Tested  |
-| Warp.dev        | Bolt      | ⚠️ Beta    |
-| Gemini CLI      | Sparkles  | ⚠️ Beta    |
+| Agent          | Icon     | Status                  |
+| -------------- | -------- | ----------------------- |
+| Claude Code    | Terminal | ✅ Tested               |
+| Warp.dev       | Bolt     | ⚠️ Beta                 |
+| Gemini CLI     | Sparkles | ⚠️ Beta                 |
+| GitHub Copilot | Code     | 🔧 Requires VS Code Ext |
 
 ## Usage
 

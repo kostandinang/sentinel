@@ -12,6 +12,7 @@ struct SessionDetailView: View {
     @State private var showingGraph = false
 
     var body: some View {
+        ZStack(alignment: .bottom) {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 // Header
@@ -119,10 +120,17 @@ struct SessionDetailView: View {
             }
             .padding()
         }
-        .sheet(isPresented: $showingGraph) {
-            SessionGraphView(session: session)
-                .frame(minWidth: 1000, minHeight: 700)
+        
+        // Bottom drawer for timeline graph
+        if showingGraph {
+            GraphDrawerView(isPresented: $showingGraph) {
+                SessionGraphView(session: session)
+            }
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .zIndex(1000)
         }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showingGraph)
     }
 
     private func color(for status: SessionStatus) -> Color {
@@ -198,6 +206,7 @@ struct EventRowView: View {
     let event: HookEvent
     @State private var isVisible = false
     @State private var isHovered = false
+    @State private var showingDetails = false
 
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
@@ -334,12 +343,18 @@ struct EventRowView: View {
                     isHovered = hovering
                 }
             }
+            .onTapGesture {
+                showingDetails = true
+            }
         }
         .padding(.vertical, 5)
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.75).delay(0.03)) {
                 isVisible = true
             }
+        }
+        .sheet(isPresented: $showingDetails) {
+            EventDetailSheet(event: event)
         }
     }
 
@@ -411,6 +426,204 @@ struct EventRowView: View {
     }
 }
 
+// MARK: - Graph Drawer View
+
+struct GraphDrawerView<Content: View>: View {
+    @Binding var isPresented: Bool
+    let content: Content
+    
+    init(isPresented: Binding<Bool>, @ViewBuilder content: () -> Content) {
+        self._isPresented = isPresented
+        self.content = content()
+    }
+    
+    var body: some View {
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                Spacer()
+                
+                // Drawer content - slides from bottom, takes up 80% of screen
+                VStack(spacing: 0) {
+                    // Drag handle
+                    VStack(spacing: 4) {
+                        Capsule()
+                            .fill(Color.secondary.opacity(0.5))
+                            .frame(width: 36, height: 5)
+                            .padding(.top, 8)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture()
+                            .onEnded { value in
+                                // Close drawer if dragged down significantly
+                                if value.translation.height > 100 {
+                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                        isPresented = false
+                                    }
+                                }
+                            }
+                    )
+                    
+                    // Header
+                    HStack {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.accentColor)
+                        
+                        Text("Timeline Graph")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        Spacer()
+                        
+                        Button(action: {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                isPresented = false
+                            }
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(Color(NSColor.controlBackgroundColor))
+                    
+                    Divider()
+                    
+                    // Graph content
+                    content
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .frame(height: geometry.size.height * 0.8)
+                .frame(maxWidth: .infinity)
+                .background(Color(NSColor.windowBackgroundColor))
+                .cornerRadius(16, corners: [.topLeft, .topRight])
+                .shadow(color: Color.black.opacity(0.3), radius: 20, y: -5)
+            }
+        }
+    }
+}
+
+// Helper for corner radius on specific corners
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+    
+    func path(in rect: CGRect) -> Path {
+        let path = NSBezierPath(roundedRect: rect,
+                                byRoundingCorners: corners,
+                                cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
+    }
+}
+
+extension NSBezierPath {
+    var cgPath: CGPath {
+        let path = CGMutablePath()
+        var points = [CGPoint](repeating: .zero, count: 3)
+        
+        for i in 0..<self.elementCount {
+            let type = self.element(at: i, associatedPoints: &points)
+            switch type {
+            case .moveTo:
+                path.move(to: points[0])
+            case .lineTo:
+                path.addLine(to: points[0])
+            case .curveTo, .cubicCurveTo:
+                path.addCurve(to: points[2], control1: points[0], control2: points[1])
+            case .quadraticCurveTo:
+                path.addQuadCurve(to: points[1], control: points[0])
+            case .closePath:
+                path.closeSubpath()
+            @unknown default:
+                break
+            }
+        }
+        return path
+    }
+}
+
+struct UIRectCorner: OptionSet {
+    let rawValue: Int
+    
+    static let topLeft = UIRectCorner(rawValue: 1 << 0)
+    static let topRight = UIRectCorner(rawValue: 1 << 1)
+    static let bottomLeft = UIRectCorner(rawValue: 1 << 2)
+    static let bottomRight = UIRectCorner(rawValue: 1 << 3)
+    static let allCorners: UIRectCorner = [.topLeft, .topRight, .bottomLeft, .bottomRight]
+}
+
+extension NSBezierPath {
+    convenience init(roundedRect rect: CGRect, byRoundingCorners corners: UIRectCorner, cornerRadii: CGSize) {
+        self.init()
+        
+        let topLeft = rect.origin
+        let topRight = CGPoint(x: rect.maxX, y: rect.minY)
+        let bottomRight = CGPoint(x: rect.maxX, y: rect.maxY)
+        let bottomLeft = CGPoint(x: rect.minX, y: rect.maxY)
+        
+        // Start from top-left
+        if corners.contains(.topLeft) {
+            move(to: CGPoint(x: topLeft.x + cornerRadii.width, y: topLeft.y))
+        } else {
+            move(to: topLeft)
+        }
+        
+        // Top edge and top-right corner
+        if corners.contains(.topRight) {
+            line(to: CGPoint(x: topRight.x - cornerRadii.width, y: topRight.y))
+            curve(to: CGPoint(x: topRight.x, y: topRight.y + cornerRadii.height),
+                  controlPoint1: topRight,
+                  controlPoint2: topRight)
+        } else {
+            line(to: topRight)
+        }
+        
+        // Right edge and bottom-right corner
+        if corners.contains(.bottomRight) {
+            line(to: CGPoint(x: bottomRight.x, y: bottomRight.y - cornerRadii.height))
+            curve(to: CGPoint(x: bottomRight.x - cornerRadii.width, y: bottomRight.y),
+                  controlPoint1: bottomRight,
+                  controlPoint2: bottomRight)
+        } else {
+            line(to: bottomRight)
+        }
+        
+        // Bottom edge and bottom-left corner
+        if corners.contains(.bottomLeft) {
+            line(to: CGPoint(x: bottomLeft.x + cornerRadii.width, y: bottomLeft.y))
+            curve(to: CGPoint(x: bottomLeft.x, y: bottomLeft.y - cornerRadii.height),
+                  controlPoint1: bottomLeft,
+                  controlPoint2: bottomLeft)
+        } else {
+            line(to: bottomLeft)
+        }
+        
+        // Left edge and back to top-left corner
+        if corners.contains(.topLeft) {
+            line(to: CGPoint(x: topLeft.x, y: topLeft.y + cornerRadii.height))
+            curve(to: CGPoint(x: topLeft.x + cornerRadii.width, y: topLeft.y),
+                  controlPoint1: topLeft,
+                  controlPoint2: topLeft)
+        } else {
+            line(to: topLeft)
+        }
+        
+        close()
+    }
+}
+
 // Empty state view
 struct EmptySessionDetailView: View {
     var body: some View {
@@ -440,7 +653,7 @@ struct EmptySessionDetailView: View {
                 HStack(spacing: 16) {
                     QuickTipItem(
                         icon: "command",
-                        text: "⌘ + O to open Sentinel"
+                        text: "⌘ + O to view agents"
                     )
 
                     QuickTipItem(
@@ -491,5 +704,187 @@ struct QuickTipItem: View {
         .padding(.vertical, 6)
         .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
         .cornerRadius(8)
+    }
+}
+
+// MARK: - Event Detail Sheet
+
+struct EventDetailSheet: View {
+    let event: HookEvent
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                HStack(spacing: 12) {
+                    Image(systemName: event.type.iconName)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(color(for: event.type))
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle()
+                                .fill(color(for: event.type).opacity(0.14))
+                        )
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(event.type.displayName)
+                            .font(.system(size: 18, weight: .semibold))
+                        
+                        Text(formatTimestamp(event.timestamp))
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                Button(action: { dismiss() }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
+            
+            Divider()
+            
+            // Content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    // Event Type Info
+                    GroupBox(label: Label("Event Information", systemImage: "info.circle")) {
+                        VStack(spacing: 12) {
+                            DetailRow(label: "Type", value: event.type.rawValue)
+                            DetailRow(label: "Timestamp", value: formatFullTimestamp(event.timestamp))
+                            DetailRow(label: "Time Ago", value: timeAgo(from: event.timestamp))
+                            
+                            if let toolName = event.toolName {
+                                DetailRow(label: "Tool", value: toolName)
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // Raw Data
+                    GroupBox(label: Label("Raw Data", systemImage: "doc.text")) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(formatEventData())
+                                .font(.system(size: 12, design: .monospaced))
+                                .textSelection(.enabled)
+                                .foregroundColor(.primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+                                .background(Color(NSColor.textBackgroundColor))
+                                .cornerRadius(6)
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // Context
+                    if let contextText = eventContext {
+                        GroupBox(label: Label("Context", systemImage: "bubble.left.and.bubble.right")) {
+                            Text(contextText)
+                                .font(.system(size: 13))
+                                .foregroundColor(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 8)
+                        }
+                    }
+                }
+                .padding()
+            }
+        }
+        .frame(width: 600, height: 500)
+    }
+    
+    private func color(for type: HookType) -> Color {
+        switch type {
+        case .promptSubmit:
+            return Color(red: 0.0, green: 0.48, blue: 1.0)
+        case .toolStart:
+            return Color(red: 1.0, green: 0.58, blue: 0.0)
+        case .toolComplete:
+            return Color(red: 0.2, green: 0.78, blue: 0.35)
+        case .sessionStop:
+            return Color(red: 0.56, green: 0.56, blue: 0.58)
+        }
+    }
+    
+    private func formatTimestamp(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .medium
+        return formatter.string(from: date)
+    }
+    
+    private func formatFullTimestamp(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        return formatter.string(from: date)
+    }
+    
+    private func timeAgo(from date: Date) -> String {
+        let interval = Date().timeIntervalSince(date)
+        
+        if interval < 60 {
+            return "just now"
+        } else if interval < 3600 {
+            let minutes = Int(interval / 60)
+            return "\(minutes) minute\(minutes == 1 ? "" : "s") ago"
+        } else if interval < 86400 {
+            let hours = Int(interval / 3600)
+            return "\(hours) hour\(hours == 1 ? "" : "s") ago"
+        } else {
+            let days = Int(interval / 86400)
+            return "\(days) day\(days == 1 ? "" : "s") ago"
+        }
+    }
+    
+    private var eventContext: String? {
+        switch event.type {
+        case .promptSubmit:
+            return "A new prompt was submitted to the agent for processing. This marks the beginning of an interaction."
+        case .toolStart:
+            return "The agent has started executing a tool. This indicates active work is being performed."
+        case .toolComplete:
+            return "The tool execution has completed successfully. The agent can now process the results."
+        case .sessionStop:
+            return "The agent session has been terminated. All activities have concluded."
+        }
+    }
+    
+    private func formatEventData() -> String {
+        var lines: [String] = []
+        lines.append("ID: \(event.id.uuidString)")
+        lines.append("Type: \(event.type.rawValue)")
+        lines.append("Timestamp: \(event.timestamp)")
+        if let toolName = event.toolName {
+            lines.append("Tool: \(toolName)")
+        }
+        return lines.joined(separator: "\n")
+    }
+}
+
+struct DetailRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(label)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+                .frame(width: 100, alignment: .leading)
+            
+            Text(value)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundColor(.primary)
+                .textSelection(.enabled)
+            
+            Spacer()
+        }
     }
 }

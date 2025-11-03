@@ -104,7 +104,9 @@ class SessionManager: ObservableObject {
     private func startProcessMonitoring() {
         // Check for dead processes every 10 seconds
         monitorTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: true) { [weak self] _ in
-            self?.checkDeadProcesses()
+            DispatchQueue.main.async {
+                self?.checkDeadProcesses()
+            }
         }
     }
 
