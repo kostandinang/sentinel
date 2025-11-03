@@ -29,40 +29,64 @@ struct SessionGraphNode: Identifiable, Hashable {
     /// Visual representation properties
     var nodeColor: Color {
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return Color(red: 0.0, green: 0.48, blue: 1.0) // macOS Blue
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return Color(red: 1.0, green: 0.58, blue: 0.0) // macOS Orange
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return Color(red: 0.2, green: 0.78, blue: 0.35) // macOS Green
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return Color(red: 0.56, green: 0.56, blue: 0.58) // macOS Gray
+        case .notification:
+            return Color(red: 1.0, green: 0.78, blue: 0.0) // Yellow
+        case .subagentStop:
+            return Color(red: 0.56, green: 0.56, blue: 0.58) // Gray
+        case .preCompact:
+            return Color(red: 0.68, green: 0.32, blue: 0.87) // Purple
+        case .sessionStart:
+            return Color(red: 0.2, green: 0.78, blue: 0.35) // Green
         }
     }
 
     var nodeSize: CGFloat {
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return 50
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return 45
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return 40
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return 55
+        case .notification:
+            return 35
+        case .subagentStop:
+            return 40
+        case .preCompact:
+            return 42
+        case .sessionStart:
+            return 48
         }
     }
 
     var glowRadius: CGFloat {
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return 15
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return 20
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return 10
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return 12
+        case .notification:
+            return 8
+        case .subagentStop:
+            return 10
+        case .preCompact:
+            return 14
+        case .sessionStart:
+            return 16
         }
     }
 
@@ -112,27 +136,39 @@ class SessionGraphBuilder {
     /// Generate narrative text for an event based on context
     static func generateNarrative(for event: HookEvent, index: Int, total: Int) -> String {
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             if index == 0 {
                 return "The journey begins with your first prompt..."
             } else {
                 return "You continued the conversation with a new prompt"
             }
 
-        case .toolStart:
+        case .toolStart, .preToolUse:
             if let tool = event.toolName {
                 return "Claude is using \(tool) to help accomplish your task"
             }
             return "Claude started using a tool"
 
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             if let tool = event.toolName {
                 return "Successfully completed \(tool) operation"
             }
             return "Tool operation completed"
 
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return "Session concluded after \(total) events"
+
+        case .notification:
+            return "Claude sent a notification"
+
+        case .subagentStop:
+            return "Subagent task completed"
+
+        case .preCompact:
+            return "Context is being optimized"
+
+        case .sessionStart:
+            return "Session initialized and ready"
         }
     }
 

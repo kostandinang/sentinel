@@ -127,17 +127,25 @@ class AgentSession: Identifiable, Codable, ObservableObject, Hashable {
 
         // Update status based on event type
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             status = .active
-        case .toolStart:
+        case .toolStart, .preToolUse:
             status = .usingTool
             currentTool = event.toolName
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             status = .active
             currentTool = nil
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             status = .stopped
             currentTool = nil
+        case .notification, .preCompact:
+            // Don't change status for these events
+            break
+        case .subagentStop:
+            // Return to active status after subagent completes
+            status = .active
+        case .sessionStart:
+            status = .active
         }
     }
 

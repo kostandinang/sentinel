@@ -86,7 +86,7 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
 
                     HStack {
-                        Text("~/.claude-code/hooks.json")
+                        Text("~/.claude/settings.json")
                             .font(.system(.caption, design: .monospaced))
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
@@ -101,6 +101,10 @@ struct SettingsView: View {
                         .buttonStyle(.borderedProminent)
                         .controlSize(.small)
                     }
+
+                    Text("Add the hooks to the 'hooks' property in settings.json")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
 
                     Text("See documentation for full setup instructions")
                         .font(.caption2)

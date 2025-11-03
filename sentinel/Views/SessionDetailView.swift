@@ -360,28 +360,47 @@ struct EventRowView: View {
 
     private var eventTitle: String {
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return "Prompt submitted"
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return event.toolName != nil ? "Started" : "Tool started"
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return event.toolName != nil ? "Completed" : "Tool completed"
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return "Session ended"
+        case .notification:
+            return "Notification"
+        case .subagentStop:
+            return "Subagent stopped"
+        case .preCompact:
+            return "Compacting"
+        case .sessionStart:
+            return "Session started"
         }
     }
 
     private var eventContext: String? {
         // Add contextual information based on event type
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
+            if let prompt = event.prompt, !prompt.isEmpty {
+                return prompt
+            }
             return "Agent is processing your request"
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return nil // Tool name is already displayed in tag
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return "Task finished successfully"
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return "All activities concluded"
+        case .notification:
+            return event.details
+        case .subagentStop:
+            return "Subagent task completed"
+        case .preCompact:
+            return "Context being compacted to save memory"
+        case .sessionStart:
+            return "New session initialized"
         }
     }
 
@@ -391,14 +410,22 @@ struct EventRowView: View {
 
     private func color(for type: HookType) -> Color {
         switch type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return Color(red: 0.0, green: 0.48, blue: 1.0) // Blue
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return Color(red: 1.0, green: 0.58, blue: 0.0) // Orange
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return Color(red: 0.2, green: 0.78, blue: 0.35) // Green
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return Color(red: 0.56, green: 0.56, blue: 0.58) // Gray
+        case .notification:
+            return Color(red: 1.0, green: 0.78, blue: 0.0) // Yellow
+        case .subagentStop:
+            return Color(red: 0.56, green: 0.56, blue: 0.58) // Gray
+        case .preCompact:
+            return Color(red: 0.68, green: 0.32, blue: 0.87) // Purple
+        case .sessionStart:
+            return Color(red: 0.2, green: 0.78, blue: 0.35) // Green
         }
     }
 
@@ -760,12 +787,60 @@ struct EventDetailSheet: View {
                             DetailRow(label: "Type", value: event.type.rawValue)
                             DetailRow(label: "Timestamp", value: formatFullTimestamp(event.timestamp))
                             DetailRow(label: "Time Ago", value: timeAgo(from: event.timestamp))
-                            
+
                             if let toolName = event.toolName {
                                 DetailRow(label: "Tool", value: toolName)
                             }
                         }
                         .padding(.vertical, 8)
+                    }
+
+                    // Prompt Info (if available)
+                    if let prompt = event.prompt, !prompt.isEmpty {
+                        GroupBox(label: Label("Prompt", systemImage: "text.bubble")) {
+                            Text(prompt)
+                                .font(.system(size: 13))
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(12)
+                                .background(Color(NSColor.textBackgroundColor))
+                                .cornerRadius(6)
+                                .padding(.vertical, 8)
+                        }
+                    }
+
+                    // Tool Input (if available)
+                    if let toolInput = event.toolInput, !toolInput.isEmpty {
+                        GroupBox(label: Label("Tool Input", systemImage: "arrow.right.circle")) {
+                            ScrollView {
+                                Text(toolInput)
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .textSelection(.enabled)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                                    .background(Color(NSColor.textBackgroundColor))
+                                    .cornerRadius(6)
+                            }
+                            .frame(maxHeight: 200)
+                            .padding(.vertical, 8)
+                        }
+                    }
+
+                    // Tool Response (if available)
+                    if let toolResponse = event.toolResponse, !toolResponse.isEmpty {
+                        GroupBox(label: Label("Tool Response", systemImage: "arrow.left.circle")) {
+                            ScrollView {
+                                Text(toolResponse)
+                                    .font(.system(size: 11, design: .monospaced))
+                                    .textSelection(.enabled)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .padding(12)
+                                    .background(Color(NSColor.textBackgroundColor))
+                                    .cornerRadius(6)
+                            }
+                            .frame(maxHeight: 200)
+                            .padding(.vertical, 8)
+                        }
                     }
                     
                     // Raw Data
@@ -802,14 +877,22 @@ struct EventDetailSheet: View {
     
     private func color(for type: HookType) -> Color {
         switch type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return Color(red: 0.0, green: 0.48, blue: 1.0)
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return Color(red: 1.0, green: 0.58, blue: 0.0)
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return Color(red: 0.2, green: 0.78, blue: 0.35)
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return Color(red: 0.56, green: 0.56, blue: 0.58)
+        case .notification:
+            return Color(red: 1.0, green: 0.78, blue: 0.0)
+        case .subagentStop:
+            return Color(red: 0.56, green: 0.56, blue: 0.58)
+        case .preCompact:
+            return Color(red: 0.68, green: 0.32, blue: 0.87)
+        case .sessionStart:
+            return Color(red: 0.2, green: 0.78, blue: 0.35)
         }
     }
     
@@ -845,14 +928,22 @@ struct EventDetailSheet: View {
     
     private var eventContext: String? {
         switch event.type {
-        case .promptSubmit:
+        case .promptSubmit, .userPromptSubmit:
             return "A new prompt was submitted to the agent for processing. This marks the beginning of an interaction."
-        case .toolStart:
+        case .toolStart, .preToolUse:
             return "The agent has started executing a tool. This indicates active work is being performed."
-        case .toolComplete:
+        case .toolComplete, .postToolUse:
             return "The tool execution has completed successfully. The agent can now process the results."
-        case .sessionStop:
+        case .sessionStop, .stop, .sessionEnd:
             return "The agent session has been terminated. All activities have concluded."
+        case .notification:
+            return "Claude Code sent a notification, typically for permission requests or status updates."
+        case .subagentStop:
+            return "A subagent (Task tool) has completed its work and returned control to the main agent."
+        case .preCompact:
+            return "Context is being compacted to reduce memory usage and stay within token limits."
+        case .sessionStart:
+            return "A new agent session has been initialized and is ready to accept commands."
         }
     }
     
@@ -861,8 +952,18 @@ struct EventDetailSheet: View {
         lines.append("ID: \(event.id.uuidString)")
         lines.append("Type: \(event.type.rawValue)")
         lines.append("Timestamp: \(event.timestamp)")
+        lines.append("Details: \(event.details)")
         if let toolName = event.toolName {
             lines.append("Tool: \(toolName)")
+        }
+        if let prompt = event.prompt {
+            lines.append("Prompt: \(prompt)")
+        }
+        if let toolInput = event.toolInput {
+            lines.append("Tool Input: \(toolInput)")
+        }
+        if let toolResponse = event.toolResponse {
+            lines.append("Tool Response: \(toolResponse)")
         }
         return lines.joined(separator: "\n")
     }

@@ -60,14 +60,17 @@ class SessionManager: ObservableObject {
         let event = HookEvent(
             type: data.type,
             details: data.type.displayName,
-            toolName: data.toolName
+            toolName: data.toolName,
+            toolInput: data.toolInput,
+            toolResponse: data.toolResponse,
+            prompt: data.prompt
         )
 
         session.addEvent(event)
         sessions.insert(session, at: 0) // Add to beginning
 
         // Send notification for new session
-        if data.type == .promptSubmit {
+        if data.type == .promptSubmit || data.type == .userPromptSubmit || data.type == .sessionStart {
             NotificationManager.shared.notifySessionStarted(workingDirectory: workingDir)
         }
 
@@ -81,13 +84,16 @@ class SessionManager: ObservableObject {
         let event = HookEvent(
             type: data.type,
             details: data.type.displayName,
-            toolName: data.toolName
+            toolName: data.toolName,
+            toolInput: data.toolInput,
+            toolResponse: data.toolResponse,
+            prompt: data.prompt
         )
 
         session.addEvent(event)
 
         // Send notification for session completion
-        if data.type == .sessionStop {
+        if data.type == .sessionStop || data.type == .stop || data.type == .sessionEnd {
             NotificationManager.shared.notifySessionCompleted(
                 workingDirectory: session.workingDirectory,
                 duration: session.durationFormatted

@@ -12,6 +12,9 @@ struct HookData {
     let pid: Int
     let workingDirectory: String?
     let toolName: String?
+    let toolInput: String?
+    let toolResponse: String?
+    let prompt: String?
     let agentType: AgentType?
 
     init?(from url: URL) {
@@ -44,9 +47,12 @@ struct HookData {
         }
         self.pid = pidValue
 
-        // Parse optional parameters
+        // Parse optional parameters with URL decoding
         self.workingDirectory = params["pwd"]?.removingPercentEncoding
         self.toolName = params["tool"]?.removingPercentEncoding
+        self.toolInput = params["tool_input"]?.removingPercentEncoding
+        self.toolResponse = params["tool_response"]?.removingPercentEncoding
+        self.prompt = params["prompt"]?.removingPercentEncoding
 
         // Parse agent type (optional, defaults to Claude Code for backwards compatibility)
         if let agentString = params["agent"]?.removingPercentEncoding {
