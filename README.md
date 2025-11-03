@@ -12,7 +12,7 @@
 - **Session History**: View all active and recent sessions
 - **Activity Timeline**: See every prompt, tool use, and event
 - **Native Notifications**: Get notified about important events
-- **Beautiful UI**: Clean, modern interface following macOS design guidelines
+- **Beautiful UI**: Clean, modern interface.
 
 ### Menu Bar Status
 
@@ -40,7 +40,6 @@ View detailed information about all your sessions, including:
 1. **Clone the repository**:
 
    ```bash
-   cd ~/Projects
    git clone <repository-url>
    cd sentinel
    ```
@@ -233,13 +232,13 @@ open -g 'sentinel://hook?type=prompt-submit&pid=$$&pwd='$(pwd)'&agent=copilot'
 
 ## How It Works
 
-Sentinel uses a custom URL scheme (`sentinel://`) to receive events from AI coding agents via hooks. When an agent triggers a hook:
+Sentinel uses a custom URL scheme (`sentinel://`) to receive events from AI coding agents via hooks configured in their settings files. When an agent triggers a hook:
 
-1. The hook executes a shell command
-2. The command opens a `sentinel://` URL with event data
-3. Sentinel receives and processes the URL
-4. The UI updates in real-time
-5. Notifications are sent (if enabled)
+1. The agent reads hook configuration from its settings file (e.g., `~/.claude/settings.json` with `hooks` property)
+2. The hook executes a shell command that opens a `sentinel://` URL with event data
+3. Sentinel's URL scheme handler receives and processes the URL
+4. The UI updates in real-time to reflect the current session state
+5. Notifications are sent (if enabled in settings)
 
 ### Hook Types
 
@@ -292,37 +291,61 @@ Access settings by clicking the gear icon in the main window:
 
 ## Architecture
 
+### Application Structure
+
 ```
-Sentinel/
+sentinel/
 ├── Models/              # Data models
-│   ├── AgentSession.swift
-│   ├── HookEvent.swift
-│   └── AgentType.swift
+│   ├── AgentSession.swift      # Session data structure
+│   ├── HookEvent.swift          # Event types and data
+│   ├── AgentType.swift          # Supported agent types
+│   └── SessionGraphNode.swift   # Graph visualization data
 ├── ViewModels/          # Business logic
-│   ├── SessionManager.swift
-│   └── MenuBarViewModel.swift
+│   ├── SessionManager.swift     # Core session tracking
+│   └── MenuBarViewModel.swift   # Menu bar state management
 ├── Views/               # UI components
-│   ├── MenuBarView.swift
-│   ├── MainWindow.swift
-│   ├── SessionListView.swift
-│   ├── SessionDetailView.swift
-│   └── SettingsView.swift
-├── Services/            # Utilities
-│   ├── URLSchemeHandler.swift
-│   ├── NotificationManager.swift
-│   └── ProcessMonitor.swift
-└── Resources/           # Assets and configs
-    └── example-hooks.json
+│   ├── MenuBarView.swift        # Menu bar dropdown
+│   ├── MainWindow.swift         # Main app window
+│   ├── SessionListView.swift    # Session list sidebar
+│   ├── SessionDetailView.swift  # Session details panel
+│   ├── SessionGraphView.swift   # Session graph visualization
+│   ├── CompactGraphView.swift   # Compact graph view
+│   ├── SettingsView.swift       # Settings panel
+│   └── Components/              # Reusable components
+│       ├── AgentTagView.swift   # Agent type badges
+│       └── ToolTagView.swift    # Tool usage badges
+├── Services/            # Core services
+│   ├── URLSchemeHandler.swift   # sentinel:// URL processing
+│   ├── NotificationManager.swift # System notifications
+│   └── ProcessMonitor.swift     # Process lifecycle tracking
+└── Resources/           # Configuration examples
+    ├── example-hooks.json       # Claude Code hooks
+    ├── example-hooks-copilot.json
+    ├── example-hooks-gemini.json
+    └── example-hooks-warp.json
 ```
 
 ## Troubleshooting
 
 ### Sentinel isn't receiving events
 
-1. **Check hooks are configured**: Verify hooks are set by viewing `~/.claude/settings.json` and ensuring the `hooks` property is present and properly formatted
+1. **Check hooks are configured**:
+
+   ```bash
+   # Verify hooks are in settings.json under "hooks" property
+   cat ~/.claude/settings.json | jq '.hooks'
+   ```
+
+   The hooks should be in `~/.claude/settings.json` under the `"hooks"` property, NOT in a separate `hooks.json` file.
+
 2. **Restart Claude Code**: Close all Claude Code sessions and start a new one
+
 3. **Check Console.app**: Look for error messages from Sentinel
-4. **Verify URL scheme**: Run `open "sentinel://hook?type=prompt-submit&pid=12345&pwd=/tmp"` in Terminal
+
+4. **Verify URL scheme**: Test manually:
+   ```bash
+   open "sentinel://hook?type=prompt-submit&pid=12345&pwd=/tmp"
+   ```
 
 ### Notifications aren't showing
 
@@ -350,12 +373,14 @@ This usually means the PID couldn't be tracked. Check that:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+Contributions are welcome!
+
+Please feel free to submit issues and pull requests.
 
 ## License
 
-MIT License - See LICENSE file for details
+MIT - See [LICENSE](./LICENSE) file for details
 
 ---
 
-_This README is crated with the help of Claude Code_
+_This repo is crated with the help of Claude Code 🤖_
