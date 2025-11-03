@@ -1,0 +1,48 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"open -g 'sentinel://hook?type=prompt-submit&pid=$PPID&pwd=$(pwd | sed 's/ /%20/g')&agent=gemini'\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"TOOL_NAME=$(python3 -c 'import sys, json; data = json.load(sys.stdin); print(data.get(\\\"tool_name\\\", \\\"Unknown\\\"))'); open -g \\\"sentinel://hook?type=tool-start&pid=$PPID&tool=$(echo \\\"$TOOL_NAME\\\" | sed 's/ /%20/g')&agent=gemini\\\"\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"TOOL_NAME=$(python3 -c 'import sys, json; data = json.load(sys.stdin); print(data.get(\\\"tool_name\\\", \\\"Unknown\\\"))'); open -g \\\"sentinel://hook?type=tool-complete&pid=$PPID&tool=$(echo \\\"$TOOL_NAME\\\" | sed 's/ /%20/g')&agent=gemini\\\"\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c \"open -g 'sentinel://hook?type=session-stop&pid=$PPID&agent=gemini'\""
+          }
+        ]
+      }
+    ]
+  }
+}

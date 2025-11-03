@@ -48,9 +48,12 @@ class SessionManager: ObservableObject {
     private func createSession(with data: HookData) {
         let workingDir = data.workingDirectory ?? ProcessMonitor.shared.getWorkingDirectory(pid: data.pid) ?? "Unknown"
 
+        // Use provided agent type, or default to Claude Code for backwards compatibility
+        let agentType = data.agentType ?? .claudeCode
+
         let session = AgentSession(
             pid: data.pid,
-            agentType: .claudeCode,
+            agentType: agentType,
             workingDirectory: workingDir
         )
 

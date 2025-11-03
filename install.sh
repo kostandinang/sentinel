@@ -32,13 +32,24 @@ echo "📋 Copying binary..."
 sudo cp .build/release/Sentinel "$MACOS_DIR/"
 sudo chmod +x "$MACOS_DIR/Sentinel"
 
-# Copy Info.plist
+# Copy and fix Info.plist
 echo "📋 Copying Info.plist..."
-sudo cp Sentinel/Info.plist "$CONTENTS_DIR/"
+cp sentinel/Info.plist /tmp/Sentinel-Info.plist
+sed -i '' 's/$(EXECUTABLE_NAME)/Sentinel/g' /tmp/Sentinel-Info.plist
+sed -i '' 's/$(PRODUCT_BUNDLE_IDENTIFIER)/com.sentinel.app/g' /tmp/Sentinel-Info.plist
+sed -i '' 's/$(DEVELOPMENT_LANGUAGE)/en/g' /tmp/Sentinel-Info.plist
+sed -i '' 's/$(PRODUCT_NAME)/Sentinel/g' /tmp/Sentinel-Info.plist
+sed -i '' 's/$(PRODUCT_BUNDLE_PACKAGE_TYPE)/APPL/g' /tmp/Sentinel-Info.plist
+sed -i '' 's/$(MACOSX_DEPLOYMENT_TARGET)/13.0/g' /tmp/Sentinel-Info.plist
+sudo cp /tmp/Sentinel-Info.plist "$CONTENTS_DIR/Info.plist"
 
-# Copy resources
+# Copy resources (if they exist)
 echo "📋 Copying resources..."
-sudo cp Sentinel/Resources/example-hooks.json "$RESOURCES_DIR/"
+if [ -f ".build/release/Sentinel_Sentinel.bundle/Contents/Resources/example-hooks.json" ]; then
+    sudo cp .build/release/Sentinel_Sentinel.bundle/Contents/Resources/example-hooks.json "$RESOURCES_DIR/"
+elif [ -f "sentinel/Resources/example-hooks.json" ]; then
+    sudo cp sentinel/Resources/example-hooks.json "$RESOURCES_DIR/"
+fi
 
 # Create a simple icon (optional - can be improved)
 echo "🎨 Setting up icon..."

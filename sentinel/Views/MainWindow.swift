@@ -19,37 +19,55 @@ struct MainWindow: View {
                 sessionManager: sessionManager,
                 selectedSession: $selectedSession
             )
-            .navigationSplitViewColumnWidth(min: 250, ideal: 300, max: 400)
+            .navigationSplitViewColumnWidth(min: 280, ideal: 320, max: 450)
         } detail: {
             // Detail view
             if let session = selectedSession {
                 SessionDetailView(session: session)
+                    .id(session.id)
                     .navigationTitle(session.displayTitle)
                     .toolbar {
-                        ToolbarItem(placement: .automatic) {
-                            Button {
-                                showingSettings = true
-                            } label: {
+                        ToolbarItemGroup(placement: .automatic) {
+                            // Refresh button
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3)) {
+                                    selectedSession = sessionManager.sessions.first(where: { $0.id == session.id })
+                                }
+                            }) {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .help("Refresh session details")
+                            .keyboardShortcut("r", modifiers: [.command])
+
+                            // Settings button
+                            Button(action: { showingSettings = true }) {
                                 Image(systemName: "gear")
                             }
+                            .help("Open settings")
+                            .keyboardShortcut(",", modifiers: [.command])
                         }
                     }
             } else {
                 EmptySessionDetailView()
                     .toolbar {
                         ToolbarItem(placement: .automatic) {
-                            Button {
-                                showingSettings = true
-                            } label: {
+                            Button(action: { showingSettings = true }) {
                                 Image(systemName: "gear")
                             }
+                            .help("Open settings")
+                            .keyboardShortcut(",", modifiers: [.command])
                         }
                     }
             }
         }
-        .frame(minWidth: 800, minHeight: 600)
+        .frame(minWidth: 900, minHeight: 650)
         .sheet(isPresented: $showingSettings) {
             SettingsView()
+        }
+        .onAppear {
+            if selectedSession == nil, let firstSession = sessionManager.sessions.first {
+                selectedSession = firstSession
+            }
         }
     }
 }

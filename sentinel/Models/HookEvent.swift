@@ -40,7 +40,7 @@ enum HookType: String, Codable {
     }
 }
 
-struct HookEvent: Identifiable, Codable {
+struct HookEvent: Identifiable, Codable, Hashable {
     let id: UUID
     let timestamp: Date
     let type: HookType

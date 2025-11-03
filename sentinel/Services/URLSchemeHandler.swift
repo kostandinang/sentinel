@@ -12,6 +12,7 @@ struct HookData {
     let pid: Int
     let workingDirectory: String?
     let toolName: String?
+    let agentType: AgentType?
 
     init?(from url: URL) {
         guard url.scheme == "sentinel",
@@ -46,6 +47,14 @@ struct HookData {
         // Parse optional parameters
         self.workingDirectory = params["pwd"]?.removingPercentEncoding
         self.toolName = params["tool"]?.removingPercentEncoding
+
+        // Parse agent type (optional, defaults to Claude Code for backwards compatibility)
+        if let agentString = params["agent"]?.removingPercentEncoding {
+            self.agentType = AgentType(identifier: agentString)
+        } else {
+            // Default to Claude Code if not specified
+            self.agentType = nil
+        }
     }
 }
 

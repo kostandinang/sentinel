@@ -1,17 +1,18 @@
 # Sentinel 🛡️
 
-**Sentinel** is a native macOS menu bar application that monitors and displays the status of Claude Code agent sessions with a clean, modern interface.
+**Sentinel** is a native macOS menu bar application that monitors and displays the status of AI coding agent sessions (Claude Code, Warp, Gemini CLI) with a clean, modern interface.
+
+![Sentinel App Screenshot](screenshot.png)
 
 ## Features
 
-- **Real-time Monitoring**: Track Claude Code sessions as they run
+- **Multi-Agent Support**: Track sessions from Claude Code, Warp.dev, and Gemini CLI
+- **Real-time Monitoring**: Track AI coding agent sessions as they run
 - **Menu Bar Integration**: Unobtrusive status indicator with dynamic icons
 - **Session History**: View all active and recent sessions
 - **Activity Timeline**: See every prompt, tool use, and event
 - **Native Notifications**: Get notified about important events
 - **Beautiful UI**: Clean, modern interface following macOS design guidelines
-
-## Screenshots
 
 ### Menu Bar Status
 
@@ -61,9 +62,15 @@ View detailed information about all your sessions, including:
 
 ## Setup
 
-To enable Sentinel monitoring, you need to configure Claude Code hooks:
+To enable Sentinel monitoring, you need to configure hooks for your AI coding agent(s). Sentinel supports:
+
+- **Claude Code**: Uses `~/.claude/settings.json`
+- **Warp.dev**: Uses Warp's hooks configuration
+- **Gemini CLI**: Uses Gemini's hooks configuration
 
 ### 1. Install the Hooks Configuration
+
+#### For Claude Code
 
 You need to manually edit Claude's settings file to configure hooks:
 
@@ -128,6 +135,32 @@ nano ~/.claude/settings.json
 
 **Step 3:** Save the file and close your editor.
 
+#### For Warp.dev
+
+If you're using Warp's AI features with agent mode:
+
+**Step 1:** Configure Warp hooks (check Warp's documentation for the exact location of hooks configuration)
+
+**Step 2:** Use the hooks configuration from `Sentinel/Resources/example-hooks-warp.json`
+
+The key difference is adding `&agent=warp` to each URL, for example:
+```
+sentinel://hook?type=prompt-submit&pid=$PPID&pwd=$(pwd)&agent=warp
+```
+
+#### For Gemini CLI
+
+If you're using the Gemini CLI tool with hooks support:
+
+**Step 1:** Configure Gemini CLI hooks (check Gemini CLI documentation for the exact location)
+
+**Step 2:** Use the hooks configuration from `Sentinel/Resources/example-hooks-gemini.json`
+
+The key difference is adding `&agent=gemini` to each URL, for example:
+```
+sentinel://hook?type=prompt-submit&pid=$PPID&pwd=$(pwd)&agent=gemini
+```
+
 ### 2. Launch Sentinel
 
 - Run the Sentinel app
@@ -143,7 +176,7 @@ nano ~/.claude/settings.json
 
 ## How It Works
 
-Sentinel uses a custom URL scheme (`sentinel://`) to receive events from Claude Code via hooks. When Claude Code triggers a hook:
+Sentinel uses a custom URL scheme (`sentinel://`) to receive events from AI coding agents via hooks. When an agent triggers a hook:
 
 1. The hook executes a shell command
 2. The command opens a `sentinel://` URL with event data
@@ -153,12 +186,20 @@ Sentinel uses a custom URL scheme (`sentinel://`) to receive events from Claude 
 
 ### Hook Types
 
-| Hook Type       | Trigger                   | Data                   |
-| --------------- | ------------------------- | ---------------------- |
-| `prompt-submit` | User submits a prompt     | PID, working directory |
-| `tool-start`    | Agent starts using a tool | PID, tool name         |
-| `tool-complete` | Tool execution completes  | PID, tool name         |
-| `session-stop`  | Session ends              | PID                    |
+| Hook Type       | Trigger                   | Data                            |
+| --------------- | ------------------------- | ------------------------------- |
+| `prompt-submit` | User submits a prompt     | PID, working directory, agent   |
+| `tool-start`    | Agent starts using a tool | PID, tool name, agent           |
+| `tool-complete` | Tool execution completes  | PID, tool name, agent           |
+| `session-stop`  | Session ends              | PID, agent                      |
+
+### Supported Agents
+
+| Agent           | Icon      | Status     |
+| --------------- | --------- | ---------- |
+| Claude Code     | Terminal  | ✅ Tested  |
+| Warp.dev        | Bolt      | ⚠️ Beta    |
+| Gemini CLI      | Sparkles  | ⚠️ Beta    |
 
 ## Usage
 
@@ -240,13 +281,14 @@ This usually means the PID couldn't be tracked. Check that:
 
 ## Future Enhancements
 
-- Support for other AI agents (Cursor, Copilot, etc.)
+- Support for additional AI agents (Cursor, Copilot, etc.)
 - Export session data (JSON, CSV, text)
 - Statistics and analytics
 - Custom icon themes
 - Keyboard shortcuts
 - Mini mode: compact session view in menu bar dropdown
 - Integration with other development tools
+- Per-agent color themes and customization
 
 ## Contributing
 
