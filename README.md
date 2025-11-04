@@ -4,8 +4,8 @@
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-blue)
 ![License](https://img.shields.io/github/license/kostandinang/sentinel)
-![GitHub stars](https://img.shields.io/github/stars/kostandinang/sentinel)
 ![GitHub issues](https://img.shields.io/github/issues/kostandinang/sentinel)
+![Beta](https://img.shields.io/badge/BETA-EC4899?style=flat&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMkwzIDZWMTFDMyAxMi42NTY5IDUuNjg2MjkgMTQgOCAxNEMxMC4zMTM3IDE0IDEzIDEyLjY1NjkgMTMgMTFWNkw4IDJaIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNOCA2VjEwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjEuNSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CjxjaXJjbGUgY3g9IjgiIGN5PSIxMiIgcj0iMC41IiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K&labelColor=1E293B)
 
 **Sentinel** is a native macOS menu bar application that monitors and displays the status of AI coding agent sessions (Claude Code, Warp, Gemini CLI) with a clean, modern interface.
 
@@ -51,16 +51,25 @@ View detailed information about all your sessions, including:
    cd sentinel
    ```
 
-2. **Open in Xcode**:
+2. **(Optional) Open in Xcode**:
 
    ```bash
    open sentinel/sentinelApp.swift
    ```
 
 3. **Build and Run**:
+   #### - Using Xcode
    - Select **sentinel** scheme
    - Click Run (⌘R)
    - The app will appear in your menu bar
+   #### - Using cli
+   Build amd install
+   ```
+   ./build.sh
+   /install.sh
+
+   ```
+   Run directly from Applications - Sentinel
 
 ### Option 2: Download Pre-built Binary
 
